@@ -1,18 +1,12 @@
 import React, { useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSessions } from '@/hooks/useSessions';
 import { useTheme } from '@/hooks/useTheme';
 import { StorageService } from '@/services/storage';
-import { Colors, Typography, Spacing, Radius, Shadows, WAKE_MOODS } from '@/constants/theme';
+import { Colors, Typography, Spacing, Radius, WAKE_MOODS } from '@/constants/theme';
 import { StarRating } from '@/components/ui/StarRating';
 import { DreamEntryCard } from '@/components/feature/DreamEntryCard';
 import { useAlert } from '@/template';
@@ -61,8 +55,7 @@ export default function SessionDetailScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          const updated = { ...session, dreams: session.dreams.filter((d) => d.id !== dreamId) };
-          await updateSession(updated);
+          await updateSession({ ...session, dreams: session.dreams.filter((d) => d.id !== dreamId) });
         },
       },
     ]);
@@ -70,6 +63,9 @@ export default function SessionDetailScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      {/* Background glow */}
+      <View style={[styles.glowBlob, { backgroundColor: accent.primary + '18' }]} pointerEvents="none" />
+
       {/* Nav */}
       <View style={styles.nav}>
         <Pressable onPress={() => router.back()} hitSlop={8} style={styles.navBtn}>
@@ -79,20 +75,21 @@ export default function SessionDetailScreen() {
           <Text style={styles.navTitle}>{StorageService.formatDate(session.bedtime)}</Text>
           <Text style={styles.navSub}>{StorageService.formatDuration(session.durationMinutes)} sleep</Text>
         </View>
-        <Pressable onPress={handleDeleteSession} hitSlop={8} style={styles.navBtn}>
-          <MaterialIcons name="delete-outline" size={22} color={Colors.error + 'CC'} />
+        <Pressable onPress={handleDeleteSession} hitSlop={8} style={[styles.navBtn, styles.navBtnDelete]}>
+          <MaterialIcons name="delete-outline" size={22} color={Colors.error} />
         </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Sleep summary card */}
-        <View style={[styles.summaryCard, { borderColor: accent.primary + '40' }]}>
-          {/* Ambient glow top */}
-          <View style={[styles.glowTop, { backgroundColor: accent.primary + '15' }]} />
+        {/* Sleep summary — liquid glass card */}
+        <View style={[styles.summaryCard, { borderColor: accent.primary + '40', shadowColor: accent.primary }]}>
+          <View style={styles.summaryHighlight} />
+          {/* Glow top wash */}
+          <View style={[styles.glowTop, { backgroundColor: accent.primary + '12' }]} />
 
           <View style={styles.timesRow}>
             <View style={styles.timeBlock}>
-              <View style={[styles.timeIcon, { backgroundColor: accent.primary + '20' }]}>
+              <View style={[styles.timeIcon, { backgroundColor: accent.primary + '20', borderColor: accent.primary + '35' }]}>
                 <MaterialIcons name="bedtime" size={18} color={accent.light} />
               </View>
               <Text style={styles.timeLabel}>Bedtime</Text>
@@ -107,7 +104,7 @@ export default function SessionDetailScreen() {
             </View>
 
             <View style={styles.timeBlock}>
-              <View style={[styles.timeIcon, { backgroundColor: Colors.accent + '20' }]}>
+              <View style={[styles.timeIcon, { backgroundColor: Colors.accent + '20', borderColor: Colors.accent + '35' }]}>
                 <MaterialIcons name="wb-sunny" size={18} color={Colors.accent} />
               </View>
               <Text style={styles.timeLabel}>Wake up</Text>
@@ -120,7 +117,7 @@ export default function SessionDetailScreen() {
           <View style={styles.ratingRow}>
             <StarRating value={session.qualityRating} readonly size={24} />
             {mood ? (
-              <View style={[styles.moodBadge, { backgroundColor: accent.primary + '20', borderColor: accent.primary + '40' }]}>
+              <View style={[styles.moodBadge, { backgroundColor: accent.primary + '18', borderColor: accent.primary + '40' }]}>
                 <Text style={styles.moodEmoji}>{mood.emoji}</Text>
                 <Text style={styles.moodLabel}>{mood.label}</Text>
               </View>
@@ -128,7 +125,7 @@ export default function SessionDetailScreen() {
           </View>
         </View>
 
-        {/* Dreams section header */}
+        {/* Dreams section */}
         <View style={styles.dreamsHeader}>
           <View>
             <Text style={styles.sectionTitle}>Dreams</Text>
@@ -136,8 +133,13 @@ export default function SessionDetailScreen() {
           </View>
           <Pressable
             onPress={() => router.push({ pathname: '/dream/edit', params: { sessionId: session.id } })}
-            style={({ pressed }) => [styles.addDreamBtn, { backgroundColor: accent.primary }, pressed && { opacity: 0.8 }]}
+            style={({ pressed }) => [
+              styles.addDreamBtn,
+              { backgroundColor: accent.primary, shadowColor: accent.primary },
+              pressed && { opacity: 0.8 },
+            ]}
           >
+            <View style={styles.addDreamBtnHighlight} />
             <MaterialIcons name="add" size={18} color={Colors.textOnPrimary} />
             <Text style={styles.addDreamText}>Add Dream</Text>
           </Pressable>
@@ -146,9 +148,14 @@ export default function SessionDetailScreen() {
         {session.dreams.length === 0 ? (
           <Pressable
             onPress={() => router.push({ pathname: '/dream/edit', params: { sessionId: session.id } })}
-            style={({ pressed }) => [styles.emptyDreams, { borderColor: accent.primary + '40' }, pressed && { opacity: 0.8 }]}
+            style={({ pressed }) => [
+              styles.emptyDreams,
+              { borderColor: accent.primary + '40' },
+              pressed && { opacity: 0.8 },
+            ]}
           >
-            <View style={[styles.emptyDreamIcon, { backgroundColor: accent.primary + '15' }]}>
+            <View style={styles.emptyDreamsHighlight} />
+            <View style={[styles.emptyDreamIcon, { backgroundColor: accent.primary + '15', borderColor: accent.primary + '30' }]}>
               <MaterialIcons name="cloud" size={32} color={accent.primary} />
             </View>
             <Text style={styles.emptyDreamsTitle}>No dreams logged yet</Text>
@@ -171,6 +178,14 @@ export default function SessionDetailScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.bg },
+  glowBlob: {
+    position: 'absolute',
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    top: -80,
+    right: -60,
+  },
   nav: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -187,19 +202,23 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     borderWidth: 1,
     borderColor: Colors.glassBorder,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.20,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  navBtnDelete: {
+    backgroundColor: 'rgba(255,96,112,0.10)',
+    borderColor: 'rgba(255,96,112,0.25)',
   },
   navCenter: { alignItems: 'center' },
-  navTitle: {
-    fontSize: Typography.base,
-    fontWeight: Typography.bold,
-    color: Colors.textPrimary,
-  },
-  navSub: {
-    fontSize: Typography.xs,
-    color: Colors.textMuted,
-    marginTop: 1,
-  },
+  navTitle: { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textPrimary },
+  navSub: { fontSize: Typography.xs, color: Colors.textMuted, marginTop: 1 },
   content: { paddingHorizontal: Spacing.base, paddingBottom: Spacing.xxxl },
+
+  // Summary card
   summaryCard: {
     backgroundColor: Colors.bgCard,
     borderRadius: Radius.xxl,
@@ -207,14 +226,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: Spacing.xl,
     overflow: 'hidden',
-    ...Shadows.lg,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.35,
+    shadowRadius: 24,
+    elevation: 14,
+  },
+  summaryHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 20,
+    right: 20,
+    height: 1,
+    backgroundColor: Colors.glassHighlight,
   },
   glowTop: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 60,
+    height: 70,
     borderTopLeftRadius: Radius.xxl,
     borderTopRightRadius: Radius.xxl,
   },
@@ -232,26 +262,15 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
   timeLabel: { fontSize: Typography.xs, color: Colors.textMuted, fontWeight: Typography.medium },
-  timeValue: {
-    fontSize: Typography.md,
-    fontWeight: Typography.extraBold,
-    color: Colors.textPrimary,
-  },
+  timeValue: { fontSize: Typography.md, fontWeight: Typography.extraBold, color: Colors.textPrimary },
   durationCenter: { alignItems: 'center', flex: 1 },
-  durationBig: {
-    fontSize: Typography.xxl,
-    fontWeight: Typography.extraBold,
-    letterSpacing: -0.5,
-  },
+  durationBig: { fontSize: Typography.xxl, fontWeight: Typography.extraBold, letterSpacing: -0.5 },
   durationLabel: { fontSize: Typography.xs, color: Colors.textMuted, marginTop: 2 },
   divider: { height: 1, backgroundColor: Colors.glassBorder, marginVertical: Spacing.md },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   moodBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -263,18 +282,15 @@ const styles = StyleSheet.create({
   },
   moodEmoji: { fontSize: Typography.base },
   moodLabel: { fontSize: Typography.sm, color: Colors.textSecondary, fontWeight: Typography.medium },
+
+  // Dreams
   dreamsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: Spacing.md,
   },
-  sectionTitle: {
-    fontSize: Typography.base,
-    fontWeight: Typography.extraBold,
-    color: Colors.textPrimary,
-    letterSpacing: -0.2,
-  },
+  sectionTitle: { fontSize: Typography.base, fontWeight: Typography.extraBold, color: Colors.textPrimary, letterSpacing: -0.2 },
   sectionSub: { fontSize: Typography.xs, color: Colors.textMuted, marginTop: 2 },
   addDreamBtn: {
     flexDirection: 'row',
@@ -283,13 +299,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: Radius.lg,
-    ...Shadows.sm,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  addDreamText: {
-    fontSize: Typography.sm,
-    fontWeight: Typography.semiBold,
-    color: Colors.textOnPrimary,
+  addDreamBtnHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '45%',
+    backgroundColor: 'rgba(255,255,255,0.20)',
+    borderTopLeftRadius: Radius.lg,
+    borderTopRightRadius: Radius.lg,
   },
+  addDreamText: { fontSize: Typography.sm, fontWeight: Typography.semiBold, color: Colors.textOnPrimary },
   emptyDreams: {
     backgroundColor: Colors.bgCard,
     borderRadius: Radius.xxl,
@@ -298,6 +324,15 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     borderWidth: 1,
     borderStyle: 'dashed',
+    overflow: 'hidden',
+  },
+  emptyDreamsHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 20,
+    right: 20,
+    height: 1,
+    backgroundColor: Colors.glassHighlight,
   },
   emptyDreamIcon: {
     width: 64,
@@ -305,29 +340,17 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
-  emptyDreamsTitle: {
-    fontSize: Typography.base,
-    fontWeight: Typography.bold,
-    color: Colors.textSecondary,
-  },
+  emptyDreamsTitle: { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textSecondary },
   emptyDreamsText: {
     fontSize: Typography.sm,
     color: Colors.textMuted,
     textAlign: 'center',
     lineHeight: Typography.sm * 1.65,
   },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.md,
-  },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.md },
   notFound: { fontSize: Typography.base, color: Colors.textSecondary },
-  backLink: {
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.md,
-  },
+  backLink: { paddingHorizontal: Spacing.base, paddingVertical: Spacing.sm, borderRadius: Radius.md },
   backLinkText: { color: Colors.textOnPrimary, fontWeight: Typography.medium },
 });

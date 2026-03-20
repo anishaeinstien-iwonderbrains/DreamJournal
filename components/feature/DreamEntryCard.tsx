@@ -2,8 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { DreamEntry } from '@/types';
-import { Colors, Typography, Spacing, Radius, Shadows } from '@/constants/theme';
-import { DREAM_TAGS } from '@/constants/theme';
+import { Colors, Typography, Spacing, Radius, DREAM_TAGS } from '@/constants/theme';
 import { TagChip } from '@/components/ui/TagChip';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -17,11 +16,15 @@ export function DreamEntryCard({ dream, onEdit, onDelete }: DreamEntryCardProps)
   const { accent } = useTheme();
   const isLucid = dream.tags.includes('lucid');
   const isNightmare = dream.tags.includes('nightmare');
-  const cardColor = isNightmare ? Colors.nightmare : isLucid ? Colors.lucid : accent.primary;
+  const cardColor = isNightmare ? '#FF5080' : isLucid ? '#40D8FF' : accent.primary;
 
   return (
-    <View style={[styles.card, { borderColor: cardColor + '30' }]}>
-      <View style={[styles.indicator, { backgroundColor: cardColor }]} />
+    <View style={[styles.card, { borderColor: cardColor + '35', shadowColor: cardColor }]}>
+      {/* Top highlight — liquid glass */}
+      <View style={[styles.topHighlight, { backgroundColor: cardColor + '30' }]} />
+
+      <View style={[styles.indicator, { backgroundColor: cardColor, shadowColor: cardColor }]} />
+
       <View style={styles.inner}>
         <View style={styles.header}>
           <View style={styles.titleRow}>
@@ -40,9 +43,9 @@ export function DreamEntryCard({ dream, onEdit, onDelete }: DreamEntryCardProps)
             <Pressable
               onPress={onDelete}
               hitSlop={8}
-              style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.6 }]}
+              style={({ pressed }) => [styles.actionBtn, styles.actionBtnDelete, pressed && { opacity: 0.6 }]}
             >
-              <MaterialIcons name="delete-outline" size={20} color={Colors.error + 'CC'} />
+              <MaterialIcons name="delete-outline" size={20} color={Colors.error} />
             </Pressable>
           </View>
         </View>
@@ -69,16 +72,30 @@ export function DreamEntryCard({ dream, onEdit, onDelete }: DreamEntryCardProps)
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.bgCardAlt,
+    backgroundColor: Colors.bgCard,
     borderRadius: Radius.xl,
     borderWidth: 1,
     marginBottom: Spacing.md,
     overflow: 'hidden',
     flexDirection: 'row',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.30,
+    shadowRadius: 14,
+    elevation: 8,
+  },
+  topHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1,
   },
   indicator: {
     width: 3,
-    backgroundColor: Colors.primary,
+    shadowOffset: { width: 2, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+    elevation: 4,
   },
   inner: {
     flex: 1,
@@ -105,9 +122,15 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
   },
   actionBtn: {
-    padding: Spacing.xs,
+    padding: Spacing.xs + 1,
     borderRadius: Radius.sm,
     backgroundColor: Colors.glass,
+    borderWidth: 1,
+    borderColor: Colors.glassBorder,
+  },
+  actionBtnDelete: {
+    backgroundColor: 'rgba(255,96,112,0.10)',
+    borderColor: 'rgba(255,96,112,0.25)',
   },
   description: {
     fontSize: Typography.sm,

@@ -17,26 +17,26 @@ import { SessionCard } from '@/components/feature/SessionCard';
 import { Colors, Typography, Spacing, Radius, Shadows } from '@/constants/theme';
 
 const MOON_PHASES = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
-
 function getMoonPhase(): string {
-  const now = new Date();
-  const idx = Math.floor((now.getDate() / 30) * 8) % 8;
-  return MOON_PHASES[idx];
+  return MOON_PHASES[Math.floor((new Date().getDate() / 30) * 8) % 8];
 }
 
 export default function JournalHome() {
   const router = useRouter();
   const { sessions, loading } = useSessions();
   const { accent, settings } = useTheme();
-  const moonPhase = getMoonPhase();
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      {/* Background glow blobs */}
+      <View style={[styles.glowBlob1, { backgroundColor: accent.primary + '18' }]} pointerEvents="none" />
+      <View style={[styles.glowBlob2, { backgroundColor: accent.accent + '10' }]} pointerEvents="none" />
+
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.titleRow}>
-            {settings.showMoonPhase && <Text style={styles.moonEmoji}>{moonPhase}</Text>}
+            {settings.showMoonPhase && <Text style={styles.moonEmoji}>{getMoonPhase()}</Text>}
             <Text style={styles.appTitle}>
               {settings.userName ? `${settings.userName}'s Dreams` : 'Dream Journal'}
             </Text>
@@ -44,17 +44,18 @@ export default function JournalHome() {
           <Text style={styles.subtitle}>
             {sessions.length === 0
               ? 'Start recording your dreams'
-              : `${sessions.length} night${sessions.length !== 1 ? 's' : ''} • ${sessions.reduce((a, s) => a + s.dreams.length, 0)} dreams`}
+              : `${sessions.length} night${sessions.length !== 1 ? 's' : ''} · ${sessions.reduce((a, s) => a + s.dreams.length, 0)} dreams`}
           </Text>
         </View>
         <Pressable
           onPress={() => router.push('/session/new')}
           style={({ pressed }) => [
             styles.addBtn,
-            { backgroundColor: accent.primary },
-            pressed && { opacity: 0.85, transform: [{ scale: 0.94 }] },
+            { backgroundColor: accent.primary, shadowColor: accent.primary },
+            pressed && { opacity: 0.82, transform: [{ scale: 0.92 }] },
           ]}
         >
+          <View style={styles.addBtnHighlight} />
           <MaterialIcons name="add" size={28} color={Colors.textOnPrimary} />
         </Pressable>
       </View>
@@ -79,10 +80,11 @@ export default function JournalHome() {
             onPress={() => router.push('/session/new')}
             style={({ pressed }) => [
               styles.emptyBtn,
-              { backgroundColor: accent.primary },
+              { backgroundColor: accent.primary, shadowColor: accent.primary },
               pressed && { opacity: 0.8 },
             ]}
           >
+            <View style={styles.emptyBtnHighlight} />
             <MaterialIcons name="bedtime" size={20} color={Colors.textOnPrimary} />
             <Text style={styles.emptyBtnText}>Log Sleep Session</Text>
           </Pressable>
@@ -100,7 +102,9 @@ export default function JournalHome() {
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
-            <View style={[styles.statsBar, { borderColor: accent.primary + '30' }]}>
+            <View style={[styles.statsBar, { borderColor: accent.primary + '28' }]}>
+              {/* Top highlight */}
+              <View style={styles.statsBarHighlight} />
               <View style={styles.statItem}>
                 <Text style={[styles.statNum, { color: accent.light }]}>{sessions.length}</Text>
                 <Text style={styles.statLabel}>nights</Text>
@@ -130,10 +134,26 @@ export default function JournalHome() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: Colors.bg,
+  safe: { flex: 1, backgroundColor: Colors.bg },
+
+  // Background glow
+  glowBlob1: {
+    position: 'absolute',
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    top: -80,
+    right: -60,
   },
+  glowBlob2: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    bottom: 100,
+    left: -60,
+  },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -142,18 +162,9 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.sm,
     paddingBottom: Spacing.base,
   },
-  headerLeft: {
-    flex: 1,
-    marginRight: Spacing.base,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  moonEmoji: {
-    fontSize: 22,
-  },
+  headerLeft: { flex: 1, marginRight: Spacing.base },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+  moonEmoji: { fontSize: 22 },
   appTitle: {
     fontSize: Typography.xl,
     fontWeight: Typography.extraBold,
@@ -172,7 +183,21 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Shadows.lg,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  addBtnHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '45%',
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    borderTopLeftRadius: 999,
+    borderTopRightRadius: 999,
   },
   list: {
     paddingHorizontal: Spacing.base,
@@ -188,11 +213,22 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.base,
     marginBottom: Spacing.base,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
+  statsBarHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 16,
+    right: 16,
+    height: 1,
+    backgroundColor: Colors.glassHighlight,
   },
+  statItem: { flex: 1, alignItems: 'center' },
   statNum: {
     fontSize: Typography.xl,
     fontWeight: Typography.extraBold,
@@ -204,16 +240,8 @@ const styles = StyleSheet.create({
     fontWeight: Typography.medium,
     marginTop: 1,
   },
-  statDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: Colors.glassBorder,
-  },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  statDivider: { width: 1, height: 28, backgroundColor: Colors.glassBorder },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyState: {
     flex: 1,
     alignItems: 'center',
@@ -221,11 +249,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xxl,
     gap: Spacing.base,
   },
-  emptyImage: {
-    width: 200,
-    height: 200,
-    marginBottom: Spacing.md,
-  },
+  emptyImage: { width: 200, height: 200, marginBottom: Spacing.md },
   emptyTitle: {
     fontSize: Typography.xl,
     fontWeight: Typography.extraBold,
@@ -245,7 +269,21 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     borderRadius: Radius.lg,
     marginTop: Spacing.sm,
-    ...Shadows.md,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
+    elevation: 8,
+  },
+  emptyBtnHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '45%',
+    backgroundColor: 'rgba(255,255,255,0.20)',
+    borderTopLeftRadius: Radius.lg,
+    borderTopRightRadius: Radius.lg,
   },
   emptyBtnText: {
     color: Colors.textOnPrimary,

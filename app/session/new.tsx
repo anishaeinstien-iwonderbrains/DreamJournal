@@ -15,15 +15,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSessions } from '@/hooks/useSessions';
 import { useTheme } from '@/hooks/useTheme';
 import { StorageService } from '@/services/storage';
-import { Colors, Typography, Spacing, Radius, Shadows, WAKE_MOODS } from '@/constants/theme';
+import { Colors, Typography, Spacing, Radius, WAKE_MOODS } from '@/constants/theme';
 import { StarRating } from '@/components/ui/StarRating';
 import { TimePickerModal } from '@/components/ui/TimePickerModal';
 import { useAlert } from '@/template';
 
 function startOfDay(d: Date): Date {
-  const c = new Date(d);
-  c.setHours(0, 0, 0, 0);
-  return c;
+  const c = new Date(d); c.setHours(0, 0, 0, 0); return c;
 }
 
 function formatDateLabel(d: Date): string {
@@ -39,15 +37,11 @@ function formatDateLabel(d: Date): string {
 }
 
 function buildDefaultBedtime(): Date {
-  const d = new Date();
-  d.setHours(23, 0, 0, 0);
-  return d;
+  const d = new Date(); d.setHours(23, 0, 0, 0); return d;
 }
 
 function addDays(d: Date, n: number): Date {
-  const c = new Date(d);
-  c.setDate(c.getDate() + n);
-  return c;
+  const c = new Date(d); c.setDate(c.getDate() + n); return c;
 }
 
 export default function NewSessionScreen() {
@@ -69,21 +63,14 @@ export default function NewSessionScreen() {
   const [showWakePicker, setShowWakePicker] = useState(false);
 
   const combinedBedtime = (): Date => {
-    const d = new Date(bedDate);
-    d.setHours(bedTime.getHours(), bedTime.getMinutes(), 0, 0);
-    return d;
+    const d = new Date(bedDate); d.setHours(bedTime.getHours(), bedTime.getMinutes(), 0, 0); return d;
   };
 
   const combinedWakeTime = (): Date => {
-    const d = new Date(sameDay ? bedDate : wakeDate);
-    d.setHours(wakeTime.getHours(), wakeTime.getMinutes(), 0, 0);
-    return d;
+    const d = new Date(sameDay ? bedDate : wakeDate); d.setHours(wakeTime.getHours(), wakeTime.getMinutes(), 0, 0); return d;
   };
 
-  const duration = StorageService.computeDuration(
-    combinedBedtime().toISOString(),
-    combinedWakeTime().toISOString()
-  );
+  const duration = StorageService.computeDuration(combinedBedtime().toISOString(), combinedWakeTime().toISOString());
 
   const handleToggleSameDay = (val: boolean) => {
     setSameDay(val);
@@ -120,11 +107,11 @@ export default function NewSessionScreen() {
     router.replace({ pathname: '/session/[id]', params: { id: session.id } });
   };
 
-  const accentPrimary = accent.primary;
-  const accentLight = accent.light;
-
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      {/* Background glow */}
+      <View style={[styles.glowBlob, { backgroundColor: accent.primary + '18' }]} pointerEvents="none" />
+
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         {/* Nav */}
         <View style={styles.nav}>
@@ -136,8 +123,13 @@ export default function NewSessionScreen() {
           </View>
           <Pressable
             onPress={handleSave}
-            style={[styles.saveChip, { backgroundColor: accentPrimary }]}
+            style={({ pressed }) => [
+              styles.saveChip,
+              { backgroundColor: accent.primary, shadowColor: accent.primary },
+              pressed && { opacity: 0.8 },
+            ]}
           >
+            <View style={styles.saveChipHighlight} />
             <Text style={styles.saveChipText}>Save</Text>
           </Pressable>
         </View>
@@ -145,36 +137,36 @@ export default function NewSessionScreen() {
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
           {/* ── Same-day toggle ─── */}
-          <View style={[styles.toggleRow, { borderColor: accentPrimary + '30' }]}>
+          <View style={[styles.toggleRow, { borderColor: accent.primary + '30' }]}>
+            <View style={styles.toggleRowHighlight} />
             <View style={styles.toggleInfo}>
-              <View style={[styles.toggleIcon, { backgroundColor: accentPrimary + '20' }]}>
-                <MaterialIcons name="nightlight-round" size={18} color={accentLight} />
+              <View style={[styles.toggleIcon, { backgroundColor: accent.primary + '22' }]}>
+                <MaterialIcons name="nightlight-round" size={18} color={accent.light} />
               </View>
               <View>
                 <Text style={styles.toggleLabel}>Slept past midnight</Text>
-                <Text style={styles.toggleSub}>
-                  {sameDay ? 'Same day sleep' : 'Woke up next day'}
-                </Text>
+                <Text style={styles.toggleSub}>{sameDay ? 'Same day sleep' : 'Woke up next day'}</Text>
               </View>
             </View>
             <Switch
               value={!sameDay}
               onValueChange={(v) => handleToggleSameDay(!v)}
-              trackColor={{ false: Colors.surface, true: accentPrimary + '80' }}
-              thumbColor={!sameDay ? accentLight : Colors.textMuted}
+              trackColor={{ false: Colors.surface, true: accent.primary + '90' }}
+              thumbColor={!sameDay ? accent.light : Colors.textMuted}
             />
           </View>
 
           {/* ── Sleep Times ─── */}
           <Text style={styles.sectionTitle}>Sleep Times</Text>
 
-          {/* Bedtime block */}
-          <View style={styles.timeBlock}>
+          {/* Bedtime */}
+          <View style={[styles.timeBlock, { borderColor: accent.primary + '30' }]}>
+            <View style={styles.timeBlockHighlight} />
             <View style={styles.timeBlockHeader}>
-              <MaterialIcons name="bedtime" size={16} color={accentLight} />
+              <MaterialIcons name="bedtime" size={16} color={accent.light} />
               <Text style={styles.timeBlockLabel}>Bedtime</Text>
             </View>
-            <View style={styles.dateNav}>
+            <View style={[styles.dateNav, { borderColor: Colors.glassBorder }]}>
               <Pressable onPress={() => shiftBedDate(-1)} hitSlop={8} style={styles.dateArrow}>
                 <MaterialIcons name="chevron-left" size={22} color={Colors.textSecondary} />
               </Pressable>
@@ -185,9 +177,14 @@ export default function NewSessionScreen() {
             </View>
             <Pressable
               onPress={() => setShowBedPicker(true)}
-              style={({ pressed }) => [styles.timeBtn, { borderColor: accentPrimary + '40' }, pressed && { opacity: 0.8 }]}
+              style={({ pressed }) => [
+                styles.timeBtn,
+                { borderColor: accent.primary + '45', backgroundColor: accent.primary + '0D' },
+                pressed && { opacity: 0.8 },
+              ]}
             >
-              <Text style={[styles.timeBtnValue, { color: accentLight }]}>
+              <View style={styles.timeBtnHighlight} />
+              <Text style={[styles.timeBtnValue, { color: accent.light }]}>
                 {StorageService.formatTime(combinedBedtime().toISOString())}
               </Text>
               <MaterialIcons name="access-time" size={18} color={Colors.textMuted} />
@@ -196,18 +193,19 @@ export default function NewSessionScreen() {
 
           {/* Duration bridge */}
           <View style={styles.durationRow}>
-            <View style={[styles.durationLine, { backgroundColor: accentPrimary + '30' }]} />
-            <View style={[styles.durationBadge, { borderColor: Colors.accent + '50', backgroundColor: Colors.accent + '15' }]}>
+            <View style={[styles.durationLine, { backgroundColor: accent.primary + '30' }]} />
+            <View style={[styles.durationBadge, { borderColor: Colors.accent + '55', backgroundColor: Colors.accent + '18' }]}>
               <MaterialIcons name="nightlight-round" size={13} color={Colors.accent} />
               <Text style={[styles.durationText, { color: Colors.accent }]}>
                 {duration > 0 ? StorageService.formatDuration(duration) : '—'}
               </Text>
             </View>
-            <View style={[styles.durationLine, { backgroundColor: accentPrimary + '30' }]} />
+            <View style={[styles.durationLine, { backgroundColor: accent.primary + '30' }]} />
           </View>
 
-          {/* Wake block */}
-          <View style={styles.timeBlock}>
+          {/* Wake */}
+          <View style={[styles.timeBlock, { borderColor: Colors.accent + '30' }]}>
+            <View style={styles.timeBlockHighlight} />
             <View style={styles.timeBlockHeader}>
               <MaterialIcons name="wb-sunny" size={16} color={Colors.accent} />
               <Text style={styles.timeBlockLabel}>Wake up</Text>
@@ -218,7 +216,7 @@ export default function NewSessionScreen() {
                 <Text style={styles.sameDayText}>Same day as bedtime ({formatDateLabel(bedDate)})</Text>
               </View>
             ) : (
-              <View style={styles.dateNav}>
+              <View style={[styles.dateNav, { borderColor: Colors.glassBorder }]}>
                 <Pressable onPress={() => shiftWakeDate(-1)} hitSlop={8} style={styles.dateArrow}>
                   <MaterialIcons name="chevron-left" size={22} color={Colors.textSecondary} />
                 </Pressable>
@@ -230,8 +228,13 @@ export default function NewSessionScreen() {
             )}
             <Pressable
               onPress={() => setShowWakePicker(true)}
-              style={({ pressed }) => [styles.timeBtn, { borderColor: Colors.accent + '40' }, pressed && { opacity: 0.8 }]}
+              style={({ pressed }) => [
+                styles.timeBtn,
+                { borderColor: Colors.accent + '45', backgroundColor: Colors.accent + '0D' },
+                pressed && { opacity: 0.8 },
+              ]}
             >
+              <View style={styles.timeBtnHighlight} />
               <Text style={[styles.timeBtnValue, { color: Colors.accentSoft }]}>
                 {StorageService.formatTime(combinedWakeTime().toISOString())}
               </Text>
@@ -241,9 +244,10 @@ export default function NewSessionScreen() {
 
           {/* ── Sleep Quality ─── */}
           <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Sleep Quality</Text>
-          <View style={[styles.card, { borderColor: accentPrimary + '30' }]}>
+          <View style={[styles.glassCard, { borderColor: accent.primary + '30' }]}>
+            <View style={styles.glassCardHighlight} />
             <StarRating value={quality} onChange={setQuality} size={38} />
-            <Text style={[styles.qualityHint, { color: accentLight }]}>
+            <Text style={[styles.qualityHint, { color: accent.light }]}>
               {quality === 1 ? 'Poor' : quality === 2 ? 'Fair' : quality === 3 ? 'Okay' : quality === 4 ? 'Good' : 'Excellent'}
             </Text>
           </View>
@@ -258,17 +262,20 @@ export default function NewSessionScreen() {
                 style={({ pressed }) => [
                   styles.moodBtn,
                   wakeMood === mood.id && {
-                    backgroundColor: accentPrimary + '25',
-                    borderColor: accentPrimary + '80',
+                    backgroundColor: accent.primary + '22',
+                    borderColor: accent.primary + '80',
+                    shadowColor: accent.primary,
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 8,
+                    elevation: 5,
                   },
                   pressed && { opacity: 0.8 },
                 ]}
               >
+                {wakeMood === mood.id && <View style={styles.moodBtnHighlight} />}
                 <Text style={styles.moodEmoji}>{mood.emoji}</Text>
-                <Text style={[
-                  styles.moodLabel,
-                  wakeMood === mood.id && { color: accentLight },
-                ]}>
+                <Text style={[styles.moodLabel, wakeMood === mood.id && { color: accent.light }]}>
                   {mood.label}
                 </Text>
               </Pressable>
@@ -280,10 +287,11 @@ export default function NewSessionScreen() {
             onPress={handleSave}
             style={({ pressed }) => [
               styles.saveBtn,
-              { backgroundColor: accentPrimary },
+              { backgroundColor: accent.primary, shadowColor: accent.primary },
               pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
             ]}
           >
+            <View style={styles.saveBtnHighlight} />
             <MaterialIcons name="check" size={22} color={Colors.textOnPrimary} />
             <Text style={styles.saveBtnText}>Save & Add Dreams</Text>
           </Pressable>
@@ -310,6 +318,14 @@ export default function NewSessionScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.bg },
+  glowBlob: {
+    position: 'absolute',
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    top: -70,
+    right: -60,
+  },
   nav: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -326,27 +342,32 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     borderWidth: 1,
     borderColor: Colors.glassBorder,
+    overflow: 'hidden',
   },
   navCenter: { flex: 1, alignItems: 'center' },
-  navTitle: {
-    fontSize: Typography.base,
-    fontWeight: Typography.bold,
-    color: Colors.textPrimary,
-  },
+  navTitle: { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textPrimary },
   saveChip: {
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.sm,
     borderRadius: Radius.lg,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.40,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  saveChipText: {
-    color: Colors.textOnPrimary,
-    fontWeight: Typography.semiBold,
-    fontSize: Typography.base,
+  saveChipHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '45%',
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    borderTopLeftRadius: Radius.lg,
+    borderTopRightRadius: Radius.lg,
   },
-  content: {
-    paddingHorizontal: Spacing.base,
-    paddingBottom: Spacing.xxxl,
-  },
+  saveChipText: { color: Colors.textOnPrimary, fontWeight: Typography.semiBold, fontSize: Typography.base },
+  content: { paddingHorizontal: Spacing.base, paddingBottom: Spacing.xxxl },
 
   // Toggle
   toggleRow: {
@@ -359,13 +380,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: Spacing.xl,
     gap: Spacing.base,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.20,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  toggleInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    flex: 1,
+  toggleRowHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 14,
+    right: 14,
+    height: 1,
+    backgroundColor: Colors.glassHighlight,
   },
+  toggleInfo: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, flex: 1 },
   toggleIcon: {
     width: 40,
     height: 40,
@@ -373,16 +403,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  toggleLabel: {
-    fontSize: Typography.base,
-    fontWeight: Typography.semiBold,
-    color: Colors.textPrimary,
-  },
-  toggleSub: {
-    fontSize: Typography.xs,
-    color: Colors.textMuted,
-    marginTop: 2,
-  },
+  toggleLabel: { fontSize: Typography.base, fontWeight: Typography.semiBold, color: Colors.textPrimary },
+  toggleSub: { fontSize: Typography.xs, color: Colors.textMuted, marginTop: 2 },
 
   sectionTitle: {
     fontSize: Typography.xs,
@@ -400,15 +422,23 @@ const styles = StyleSheet.create({
     borderRadius: Radius.xl,
     padding: Spacing.base,
     borderWidth: 1,
-    borderColor: Colors.glassBorder,
     gap: Spacing.md,
-    ...Shadows.sm,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.20,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  timeBlockHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
+  timeBlockHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 14,
+    right: 14,
+    height: 1,
+    backgroundColor: Colors.glassHighlight,
   },
+  timeBlockHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs },
   timeBlockLabel: {
     fontSize: Typography.xs,
     fontWeight: Typography.bold,
@@ -425,14 +455,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xs,
     paddingHorizontal: Spacing.xs,
     borderWidth: 1,
-    borderColor: Colors.glassBorder,
   },
-  dateArrow: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  dateArrow: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
   dateText: {
     fontSize: Typography.sm,
     fontWeight: Typography.semiBold,
@@ -456,19 +480,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.bgCardAlt,
     borderRadius: Radius.lg,
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.md + 2,
     borderWidth: 1,
+    overflow: 'hidden',
   },
-  timeBtnValue: {
-    fontSize: Typography.xl,
-    fontWeight: Typography.extraBold,
-    letterSpacing: 1,
+  timeBtnHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '40%',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderTopLeftRadius: Radius.lg,
+    borderTopRightRadius: Radius.lg,
   },
+  timeBtnValue: { fontSize: Typography.xl, fontWeight: Typography.extraBold, letterSpacing: 1 },
 
-  // Duration bridge
+  // Duration
   durationRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -486,34 +516,35 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     borderWidth: 1,
   },
-  durationText: {
-    fontSize: Typography.sm,
-    fontWeight: Typography.bold,
-    letterSpacing: 0.3,
-  },
+  durationText: { fontSize: Typography.sm, fontWeight: Typography.bold, letterSpacing: 0.3 },
 
-  // Quality card
-  card: {
+  // Quality
+  glassCard: {
     backgroundColor: Colors.bgCard,
     borderRadius: Radius.xl,
     padding: Spacing.xl,
     alignItems: 'center',
     gap: Spacing.md,
     borderWidth: 1,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.20,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  qualityHint: {
-    fontSize: Typography.base,
-    fontWeight: Typography.semiBold,
-    letterSpacing: 0.3,
+  glassCardHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 14,
+    right: 14,
+    height: 1,
+    backgroundColor: Colors.glassHighlight,
   },
+  qualityHint: { fontSize: Typography.base, fontWeight: Typography.semiBold, letterSpacing: 0.3 },
 
   // Mood
-  moodGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.md,
-    marginBottom: Spacing.xl,
-  },
+  moodGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, marginBottom: Spacing.xl },
   moodBtn: {
     flex: 1,
     minWidth: '28%',
@@ -524,13 +555,20 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
     borderWidth: 1,
     borderColor: Colors.glassBorder,
+    overflow: 'hidden',
+  },
+  moodBtnHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '40%',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
   },
   moodEmoji: { fontSize: Typography.xl },
-  moodLabel: {
-    fontSize: Typography.xs,
-    color: Colors.textMuted,
-    fontWeight: Typography.semiBold,
-  },
+  moodLabel: { fontSize: Typography.xs, color: Colors.textMuted, fontWeight: Typography.semiBold },
 
   // Save
   saveBtn: {
@@ -540,7 +578,21 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     borderRadius: Radius.xl,
     paddingVertical: Spacing.base + 4,
-    ...Shadows.lg,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.45,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  saveBtnHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '40%',
+    backgroundColor: 'rgba(255,255,255,0.20)',
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
   },
   saveBtnText: {
     fontSize: Typography.base,

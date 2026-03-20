@@ -1,55 +1,51 @@
-// Dream Journal Theme
+// Dream Journal Theme — Liquid Glass Edition
 export const Colors = {
-  // Backgrounds
-  bg: '#080618',
-  bgCard: '#0F0C24',
-  bgCardAlt: '#16133A',
-  surface: '#1C1945',
-  surfaceLight: '#262350',
+  // Backgrounds — deep navy base for glass to float on
+  bg: '#06040F',
+  bgCard: 'rgba(255,255,255,0.07)',
+  bgCardAlt: 'rgba(255,255,255,0.10)',
+  surface: 'rgba(255,255,255,0.05)',
+  surfaceLight: 'rgba(255,255,255,0.12)',
 
   // Brand
-  primary: '#7B5EA7',
-  primaryLight: '#B48EE8',
-  primaryDark: '#5A4080',
-  accent: '#F0C060',
-  accentSoft: '#F5D585',
-  accentPink: '#E87BB0',
-
-  // Gradients (used as arrays)
-  gradientCard: ['#13103080', '#0F0C2480'] as string[],
-  gradientPrimary: ['#9B6EE8', '#6B4AAA'] as string[],
-  gradientAccent: ['#F5D580', '#E8A030'] as string[],
+  primary: '#8B6FE8',
+  primaryLight: '#C4AAFF',
+  primaryDark: '#5A40B0',
+  accent: '#FFD060',
+  accentSoft: '#FFE599',
+  accentPink: '#FF80C0',
 
   // Text
-  textPrimary: '#F0EEFF',
-  textSecondary: '#9B93C8',
-  textMuted: '#4E4A72',
+  textPrimary: '#F8F4FF',
+  textSecondary: '#B8AEDC',
+  textMuted: '#6B6090',
   textOnPrimary: '#FFFFFF',
 
   // Semantic
-  success: '#5EC87A',
-  warning: '#F0C060',
-  error: '#E06060',
-  lucid: '#60C0E0',
-  nightmare: '#E06080',
-  recurring: '#C080E0',
-  vivid: '#80D0A0',
+  success: '#50E88A',
+  warning: '#FFD060',
+  error: '#FF6070',
+  lucid: '#40D8FF',
+  nightmare: '#FF5080',
+  recurring: '#D060FF',
+  vivid: '#60FFB0',
 
   // UI
-  border: '#201C4A',
-  borderLight: '#2E2A60',
-  borderGlow: '#7B5EA740',
-  divider: '#141230',
-  overlay: 'rgba(8,6,24,0.92)',
+  border: 'rgba(255,255,255,0.10)',
+  borderLight: 'rgba(255,255,255,0.18)',
+  divider: 'rgba(255,255,255,0.06)',
+  overlay: 'rgba(6,4,15,0.90)',
   transparent: 'transparent',
 
-  // Glass
-  glass: 'rgba(255,255,255,0.04)',
-  glassBorder: 'rgba(255,255,255,0.08)',
+  // Liquid Glass
+  glass: 'rgba(255,255,255,0.06)',
+  glassBorder: 'rgba(255,255,255,0.14)',
+  glassHighlight: 'rgba(255,255,255,0.22)',
+  glassShadow: 'rgba(0,0,0,0.40)',
+  glassInner: 'rgba(255,255,255,0.04)',
 };
 
 export const Typography = {
-  // Sizes
   xs: 11,
   sm: 13,
   base: 16,
@@ -59,14 +55,12 @@ export const Typography = {
   xxl: 30,
   hero: 38,
 
-  // Weights
   regular: '400' as const,
   medium: '500' as const,
   semiBold: '600' as const,
   bold: '700' as const,
   extraBold: '800' as const,
 
-  // Line Heights
   tight: 1.3,
   normal: 1.5,
   relaxed: 1.7,
@@ -94,59 +88,102 @@ export const Radius = {
 
 export const Shadows = {
   sm: {
-    shadowColor: '#7B5EA7',
+    shadowColor: '#8B6FE8',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
     elevation: 4,
   },
   md: {
-    shadowColor: '#7B5EA7',
+    shadowColor: '#8B6FE8',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 14,
-    elevation: 8,
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    elevation: 10,
   },
   lg: {
-    shadowColor: '#B48EE8',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.35,
-    shadowRadius: 24,
-    elevation: 14,
+    shadowColor: '#C4AAFF',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.40,
+    shadowRadius: 28,
+    elevation: 16,
   },
   accent: {
-    shadowColor: '#F0C060',
+    shadowColor: '#FFD060',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
     elevation: 6,
+  },
+  glow: {
+    shadowColor: '#8B6FE8',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    elevation: 12,
   },
 };
 
 export const DREAM_TAGS = [
-  { id: 'lucid', label: 'Lucid', color: Colors.lucid },
-  { id: 'nightmare', label: 'Nightmare', color: Colors.nightmare },
-  { id: 'recurring', label: 'Recurring', color: Colors.recurring },
-  { id: 'vivid', label: 'Vivid', color: Colors.vivid },
-  { id: 'peaceful', label: 'Peaceful', color: Colors.success },
-  { id: 'adventure', label: 'Adventure', color: Colors.accent },
-  { id: 'strange', label: 'Strange', color: Colors.primaryLight },
-  { id: 'emotional', label: 'Emotional', color: Colors.error },
+  { id: 'lucid',     label: 'Lucid',     color: '#40D8FF' },
+  { id: 'nightmare', label: 'Nightmare', color: '#FF5080' },
+  { id: 'recurring', label: 'Recurring', color: '#D060FF' },
+  { id: 'vivid',     label: 'Vivid',     color: '#60FFB0' },
+  { id: 'peaceful',  label: 'Peaceful',  color: '#50E88A' },
+  { id: 'adventure', label: 'Adventure', color: '#FFD060' },
+  { id: 'strange',   label: 'Strange',   color: '#C4AAFF' },
+  { id: 'emotional', label: 'Emotional', color: '#FF8090' },
 ];
 
 export const WAKE_MOODS = [
-  { id: 'refreshed', emoji: '😌', label: 'Refreshed' },
-  { id: 'groggy', emoji: '😴', label: 'Groggy' },
-  { id: 'anxious', emoji: '😟', label: 'Anxious' },
-  { id: 'happy', emoji: '😊', label: 'Happy' },
-  { id: 'confused', emoji: '😵', label: 'Confused' },
-  { id: 'energized', emoji: '⚡', label: 'Energized' },
+  { id: 'refreshed',  emoji: '😌', label: 'Refreshed' },
+  { id: 'groggy',     emoji: '😴', label: 'Groggy' },
+  { id: 'anxious',    emoji: '😟', label: 'Anxious' },
+  { id: 'happy',      emoji: '😊', label: 'Happy' },
+  { id: 'confused',   emoji: '😵', label: 'Confused' },
+  { id: 'energized',  emoji: '⚡', label: 'Energized' },
 ];
 
+// Brighter, more vivid accent palettes
 export const ACCENT_COLORS = [
-  { id: 'purple', label: 'Cosmic', primary: '#7B5EA7', light: '#B48EE8', accent: '#F0C060' },
-  { id: 'blue', label: 'Ocean', primary: '#3B82C4', light: '#6FB0F0', accent: '#60E0D0' },
-  { id: 'rose', label: 'Aurora', primary: '#A0527A', light: '#D884AB', accent: '#F0A060' },
-  { id: 'emerald', label: 'Forest', primary: '#2E8B6A', light: '#5EC8A0', accent: '#A0E060' },
-  { id: 'indigo', label: 'Nebula', primary: '#5050B0', light: '#8888E8', accent: '#E0B060' },
+  {
+    id: 'purple',
+    label: 'Cosmic',
+    primary: '#8B6FE8',
+    light: '#C4AAFF',
+    accent: '#FFD060',
+    glow: 'rgba(139,111,232,0.45)',
+  },
+  {
+    id: 'blue',
+    label: 'Ocean',
+    primary: '#2E9AFF',
+    light: '#7DCFFF',
+    accent: '#30FFE8',
+    glow: 'rgba(46,154,255,0.45)',
+  },
+  {
+    id: 'rose',
+    label: 'Aurora',
+    primary: '#FF5BA7',
+    light: '#FFB0D6',
+    accent: '#FFB830',
+    glow: 'rgba(255,91,167,0.45)',
+  },
+  {
+    id: 'emerald',
+    label: 'Verdant',
+    primary: '#00C87A',
+    light: '#60FFB8',
+    accent: '#B0FF60',
+    glow: 'rgba(0,200,122,0.45)',
+  },
+  {
+    id: 'indigo',
+    label: 'Nebula',
+    primary: '#6040E0',
+    light: '#9E80FF',
+    accent: '#FF80E0',
+    glow: 'rgba(96,64,224,0.45)',
+  },
 ];

@@ -19,12 +19,22 @@ export function TagChip({ label, color, selected = false, onPress, size = 'md' }
         styles.chip,
         isSmall && styles.chipSm,
         {
-          backgroundColor: selected ? color + '28' : Colors.glass,
-          borderColor: selected ? color + 'AA' : Colors.glassBorder,
+          backgroundColor: selected ? color + '20' : Colors.glass,
+          borderColor: selected ? color + 'BB' : Colors.glassBorder,
+          // Inner highlight
+          shadowColor: selected ? color : 'transparent',
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: selected ? 0.4 : 0,
+          shadowRadius: 6,
+          elevation: selected ? 3 : 0,
         },
-        pressed && { opacity: 0.7, transform: [{ scale: 0.97 }] },
+        pressed && { opacity: 0.7, transform: [{ scale: 0.96 }] },
       ]}
     >
+      {/* Top shimmer highlight */}
+      {selected && (
+        <View style={[styles.shimmer, { backgroundColor: color + '30' }]} pointerEvents="none" />
+      )}
       {selected && !isSmall && (
         <View style={[styles.dot, { backgroundColor: color }]} />
       )}
@@ -50,10 +60,20 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     borderWidth: 1,
     gap: Spacing.xs,
+    overflow: 'hidden',
   },
   chipSm: {
     paddingHorizontal: Spacing.sm + 2,
     paddingVertical: 3,
+  },
+  shimmer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    borderTopLeftRadius: Radius.full,
+    borderTopRightRadius: Radius.full,
   },
   dot: {
     width: 5,

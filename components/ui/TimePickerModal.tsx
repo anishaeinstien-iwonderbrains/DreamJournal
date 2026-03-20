@@ -18,7 +18,7 @@ interface TimePickerModalProps {
   onCancel: () => void;
 }
 
-const ITEM_HEIGHT = 48;
+const ITEM_HEIGHT = 52;
 
 function PickerColumn({
   items,
@@ -27,6 +27,7 @@ function PickerColumn({
   label,
   renderLabel,
   visProp,
+  accentColor,
 }: {
   items: number[] | string[];
   selected: number | string;
@@ -34,6 +35,7 @@ function PickerColumn({
   label: string;
   renderLabel?: (v: any) => string;
   visProp: boolean;
+  accentColor: string;
 }) {
   const scrollRef = useRef<ScrollView>(null);
   const idx = (items as any[]).indexOf(selected);
@@ -48,7 +50,12 @@ function PickerColumn({
     <View style={colStyles.col}>
       <Text style={colStyles.label}>{label}</Text>
       <View style={colStyles.scrollWrap}>
-        <View style={colStyles.highlight} pointerEvents="none" />
+        {/* Frosted highlight band */}
+        <View style={[colStyles.highlight, { backgroundColor: accentColor + '20', borderColor: accentColor + '45' }]} pointerEvents="none" />
+        {/* Top fade */}
+        <View style={colStyles.fadeTop} pointerEvents="none" />
+        {/* Bottom fade */}
+        <View style={colStyles.fadeBottom} pointerEvents="none" />
         <ScrollView
           ref={scrollRef}
           style={colStyles.scroll}
@@ -65,7 +72,7 @@ function PickerColumn({
                 onPress={() => onSelect(v)}
                 style={[colStyles.item, isSel && colStyles.itemSel]}
               >
-                <Text style={[colStyles.itemText, isSel && colStyles.itemTextSel]}>
+                <Text style={[colStyles.itemText, isSel && [colStyles.itemTextSel, { color: accentColor }]]}>
                   {renderLabel ? renderLabel(v) : String(v).padStart(2, '0')}
                 </Text>
               </Pressable>
@@ -115,18 +122,19 @@ export function TimePickerModal({ visible: visProp, value, title, onConfirm, onC
     onConfirm(d);
   };
 
-  const colHighlight = { ...colStyles.highlight, backgroundColor: accent.primary + '28', borderColor: accent.primary + '40' };
-
   return (
     <Modal visible={visProp} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.overlay}>
         <View style={styles.modal}>
+          {/* Top highlight */}
+          <View style={styles.topHighlight} />
           {/* Handle */}
           <View style={styles.handle} />
           <Text style={styles.title}>{title}</Text>
 
-          {/* Preview */}
-          <View style={[styles.previewRow, { borderColor: accent.primary + '40' }]}>
+          {/* Preview — glowing */}
+          <View style={[styles.previewRow, { borderColor: accent.primary + '50', backgroundColor: accent.primary + '12' }]}>
+            <View style={[styles.previewGlow, { backgroundColor: accent.primary + '20' }]} />
             <Text style={[styles.preview, { color: accent.light }]}>{formatPreview()}</Text>
           </View>
 
@@ -138,6 +146,7 @@ export function TimePickerModal({ visible: visProp, value, title, onConfirm, onC
               label="Hour"
               renderLabel={(v) => String(v).padStart(2, '0')}
               visProp={visProp}
+              accentColor={accent.primary}
             />
             <Text style={styles.colon}>:</Text>
             <PickerColumn
@@ -147,6 +156,7 @@ export function TimePickerModal({ visible: visProp, value, title, onConfirm, onC
               label="Min"
               renderLabel={(v) => String(v).padStart(2, '0')}
               visProp={visProp}
+              accentColor={accent.primary}
             />
             <View style={styles.spacer} />
             <View style={colStyles.col}>
@@ -158,10 +168,18 @@ export function TimePickerModal({ visible: visProp, value, title, onConfirm, onC
                     onPress={() => setPeriod(p)}
                     style={({ pressed }) => [
                       styles.ampmBtn,
-                      period === p && [styles.ampmBtnSel, { backgroundColor: accent.primary, borderColor: accent.light }],
+                      period === p && [
+                        styles.ampmBtnSel,
+                        {
+                          backgroundColor: accent.primary,
+                          borderColor: accent.light,
+                          shadowColor: accent.primary,
+                        },
+                      ],
                       pressed && { opacity: 0.8 },
                     ]}
                   >
+                    {period === p && <View style={[styles.ampmHighlight, { backgroundColor: accent.light + '30' }]} />}
                     <Text style={[styles.ampmText, period === p && styles.ampmTextSel]}>{p}</Text>
                   </Pressable>
                 ))}
@@ -175,8 +193,13 @@ export function TimePickerModal({ visible: visProp, value, title, onConfirm, onC
             </Pressable>
             <Pressable
               onPress={handleConfirm}
-              style={[styles.btn, { backgroundColor: accent.primary }]}
+              style={({ pressed }) => [
+                styles.btn,
+                { backgroundColor: accent.primary, shadowColor: accent.primary },
+                pressed && { opacity: 0.85 },
+              ]}
             >
+              <View style={styles.btnHighlight} />
               <Text style={styles.btnConfirmText}>Set Time</Text>
             </Pressable>
           </View>
@@ -187,10 +210,7 @@ export function TimePickerModal({ visible: visProp, value, title, onConfirm, onC
 }
 
 const colStyles = StyleSheet.create({
-  col: {
-    alignItems: 'center',
-    flex: 1,
-  },
+  col: { alignItems: 'center', flex: 1 },
   label: {
     fontSize: Typography.xs,
     color: Colors.textMuted,
@@ -203,6 +223,8 @@ const colStyles = StyleSheet.create({
     height: ITEM_HEIGHT * 5,
     width: '100%',
     position: 'relative',
+    overflow: 'hidden',
+    borderRadius: Radius.md,
   },
   highlight: {
     position: 'absolute',
@@ -210,15 +232,31 @@ const colStyles = StyleSheet.create({
     left: 4,
     right: 4,
     height: ITEM_HEIGHT,
-    backgroundColor: Colors.primary + '28',
     borderRadius: Radius.md,
     borderWidth: 1,
-    borderColor: Colors.primary + '40',
     zIndex: 1,
   },
-  scroll: {
-    flex: 1,
+  fadeTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: ITEM_HEIGHT * 2,
+    backgroundColor: 'rgba(6,4,15,0.65)',
+    zIndex: 2,
+    pointerEvents: 'none',
   },
+  fadeBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: ITEM_HEIGHT * 2,
+    backgroundColor: 'rgba(6,4,15,0.65)',
+    zIndex: 2,
+    pointerEvents: 'none',
+  },
+  scroll: { flex: 1 },
   item: {
     height: ITEM_HEIGHT,
     alignItems: 'center',
@@ -230,10 +268,10 @@ const colStyles = StyleSheet.create({
   itemText: {
     fontSize: Typography.md,
     color: Colors.textMuted,
+    fontWeight: Typography.medium,
   },
   itemTextSel: {
-    color: Colors.primaryLight,
-    fontWeight: Typography.bold,
+    fontWeight: Typography.extraBold,
     fontSize: Typography.xl,
   },
 });
@@ -241,18 +279,33 @@ const colStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.85)',
+    backgroundColor: 'rgba(0,0,0,0.80)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: Spacing.xl,
   },
   modal: {
-    backgroundColor: Colors.bgCard,
+    backgroundColor: 'rgba(18,14,40,0.95)',
     borderRadius: Radius.xxl,
     padding: Spacing.xl,
     width: '100%',
     borderWidth: 1,
     borderColor: Colors.glassBorder,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.6,
+    shadowRadius: 40,
+    elevation: 20,
+  },
+  topHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 20,
+    right: 20,
+    height: 1,
+    backgroundColor: Colors.glassHighlight,
+    borderRadius: Radius.full,
   },
   handle: {
     width: 36,
@@ -273,15 +326,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.base,
     paddingVertical: Spacing.md,
-    backgroundColor: Colors.glass,
     borderRadius: Radius.lg,
     borderWidth: 1,
-    borderColor: Colors.glassBorder,
+    overflow: 'hidden',
+  },
+  previewGlow: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '60%',
+    borderBottomLeftRadius: Radius.lg,
+    borderBottomRightRadius: Radius.lg,
   },
   preview: {
     fontSize: Typography.xxl,
     fontWeight: Typography.extraBold,
-    letterSpacing: 2,
+    letterSpacing: 3,
   },
   pickers: {
     flexDirection: 'row',
@@ -294,10 +355,9 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: ITEM_HEIGHT * 2 + 28,
     paddingHorizontal: 2,
+    fontWeight: Typography.bold,
   },
-  spacer: {
-    width: Spacing.md,
-  },
+  spacer: { width: Spacing.md },
   ampmCol: {
     gap: Spacing.md,
     marginTop: ITEM_HEIGHT * 2,
@@ -311,10 +371,24 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.glass,
     borderWidth: 1,
     borderColor: Colors.glassBorder,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0,
+    shadowRadius: 10,
+    elevation: 0,
   },
   ampmBtnSel: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primaryLight,
+    shadowOpacity: 0.5,
+    elevation: 6,
+  },
+  ampmHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '45%',
+    borderTopLeftRadius: Radius.md,
+    borderTopRightRadius: Radius.md,
   },
   ampmText: {
     fontSize: Typography.base,
@@ -323,6 +397,7 @@ const styles = StyleSheet.create({
   },
   ampmTextSel: {
     color: Colors.textOnPrimary,
+    fontWeight: Typography.bold,
   },
   actions: {
     flexDirection: 'row',
@@ -333,11 +408,28 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md + 2,
     borderRadius: Radius.lg,
     alignItems: 'center',
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  btnHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '45%',
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderTopLeftRadius: Radius.lg,
+    borderTopRightRadius: Radius.lg,
   },
   btnCancel: {
     backgroundColor: Colors.glass,
     borderWidth: 1,
     borderColor: Colors.glassBorder,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   btnCancelText: {
     color: Colors.textSecondary,
