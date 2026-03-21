@@ -1,11 +1,11 @@
 // Dream Journal Theme — Liquid Glass Edition
 export const Colors = {
-  // Backgrounds — deep navy base for glass to float on
-  bg: '#06040F',
-  bgCard: 'rgba(255,255,255,0.07)',
-  bgCardAlt: 'rgba(255,255,255,0.10)',
-  surface: 'rgba(255,255,255,0.05)',
-  surfaceLight: 'rgba(255,255,255,0.12)',
+  // Backgrounds — very deep, near-black so glass has contrast to blur against
+  bg: '#04030C',
+  bgCard: 'rgba(255,255,255,0.06)',   // kept for non-blur fallback
+  bgCardAlt: 'rgba(255,255,255,0.09)',
+  surface: 'rgba(255,255,255,0.04)',
+  surfaceLight: 'rgba(255,255,255,0.10)',
 
   // Brand
   primary: '#8B6FE8',
@@ -16,9 +16,9 @@ export const Colors = {
   accentPink: '#FF80C0',
 
   // Text
-  textPrimary: '#F8F4FF',
-  textSecondary: '#B8AEDC',
-  textMuted: '#6B6090',
+  textPrimary: '#F4F0FF',
+  textSecondary: '#B0A4D8',
+  textMuted: '#5C5280',
   textOnPrimary: '#FFFFFF',
 
   // Semantic
@@ -30,19 +30,20 @@ export const Colors = {
   recurring: '#D060FF',
   vivid: '#60FFB0',
 
-  // UI
+  // UI chrome
   border: 'rgba(255,255,255,0.10)',
-  borderLight: 'rgba(255,255,255,0.18)',
+  borderLight: 'rgba(255,255,255,0.22)',
   divider: 'rgba(255,255,255,0.06)',
-  overlay: 'rgba(6,4,15,0.90)',
+  overlay: 'rgba(4,3,12,0.88)',
   transparent: 'transparent',
 
-  // Liquid Glass
-  glass: 'rgba(255,255,255,0.06)',
-  glassBorder: 'rgba(255,255,255,0.14)',
-  glassHighlight: 'rgba(255,255,255,0.22)',
-  glassShadow: 'rgba(0,0,0,0.40)',
+  // Liquid Glass tokens
+  glass: 'rgba(255,255,255,0.05)',
+  glassBorder: 'rgba(255,255,255,0.15)',
+  glassHighlight: 'rgba(255,255,255,0.50)',   // bright shimmer line
+  glassShadow: 'rgba(0,0,0,0.50)',
   glassInner: 'rgba(255,255,255,0.04)',
+  glassSpecular: 'rgba(255,255,255,0.30)',    // top-edge reflection gradient start
 };
 
 export const Typography = {
@@ -144,7 +145,7 @@ export const WAKE_MOODS = [
   { id: 'energized',  emoji: '⚡', label: 'Energized' },
 ];
 
-// Brighter, more vivid accent palettes
+// Vivid accent palettes — each supplies primary, light, accent, glow
 export const ACCENT_COLORS = [
   {
     id: 'purple',
@@ -152,15 +153,15 @@ export const ACCENT_COLORS = [
     primary: '#8B6FE8',
     light: '#C4AAFF',
     accent: '#FFD060',
-    glow: 'rgba(139,111,232,0.45)',
+    glow: 'rgba(139,111,232,0.50)',
   },
   {
     id: 'blue',
     label: 'Ocean',
     primary: '#2E9AFF',
-    light: '#7DCFFF',
+    light: '#80D0FF',
     accent: '#30FFE8',
-    glow: 'rgba(46,154,255,0.45)',
+    glow: 'rgba(46,154,255,0.50)',
   },
   {
     id: 'rose',
@@ -168,7 +169,7 @@ export const ACCENT_COLORS = [
     primary: '#FF5BA7',
     light: '#FFB0D6',
     accent: '#FFB830',
-    glow: 'rgba(255,91,167,0.45)',
+    glow: 'rgba(255,91,167,0.50)',
   },
   {
     id: 'emerald',
@@ -176,7 +177,7 @@ export const ACCENT_COLORS = [
     primary: '#00C87A',
     light: '#60FFB8',
     accent: '#B0FF60',
-    glow: 'rgba(0,200,122,0.45)',
+    glow: 'rgba(0,200,122,0.50)',
   },
   {
     id: 'indigo',
@@ -184,6 +185,6 @@ export const ACCENT_COLORS = [
     primary: '#6040E0',
     light: '#9E80FF',
     accent: '#FF80E0',
-    glow: 'rgba(96,64,224,0.45)',
+    glow: 'rgba(96,64,224,0.50)',
   },
 ];

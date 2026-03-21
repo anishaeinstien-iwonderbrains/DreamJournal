@@ -7,6 +7,8 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -50,12 +52,34 @@ function PickerColumn({
     <View style={colStyles.col}>
       <Text style={colStyles.label}>{label}</Text>
       <View style={colStyles.scrollWrap}>
-        {/* Frosted highlight band */}
-        <View style={[colStyles.highlight, { backgroundColor: accentColor + '20', borderColor: accentColor + '45' }]} pointerEvents="none" />
-        {/* Top fade */}
-        <View style={colStyles.fadeTop} pointerEvents="none" />
-        {/* Bottom fade */}
-        <View style={colStyles.fadeBottom} pointerEvents="none" />
+        {/* Selected item highlight — glass */}
+        <View style={[colStyles.highlight, { borderColor: accentColor + '50' }]} pointerEvents="none">
+          <BlurView intensity={50} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.md }]} />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: accentColor + '12', borderRadius: Radius.md }]} />
+          {/* Top shimmer on selection band */}
+          <LinearGradient
+            colors={['rgba(255,255,255,0.20)', 'rgba(255,255,255,0.00)']}
+            style={[StyleSheet.absoluteFill, { borderTopLeftRadius: Radius.md, borderTopRightRadius: Radius.md }]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            pointerEvents="none"
+          />
+        </View>
+        {/* Fade overlays */}
+        <LinearGradient
+          colors={['rgba(4,3,12,0.92)', 'rgba(4,3,12,0.00)']}
+          style={colStyles.fadeTop}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          pointerEvents="none"
+        />
+        <LinearGradient
+          colors={['rgba(4,3,12,0.00)', 'rgba(4,3,12,0.92)']}
+          style={colStyles.fadeBottom}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          pointerEvents="none"
+        />
         <ScrollView
           ref={scrollRef}
           style={colStyles.scroll}
@@ -70,7 +94,7 @@ function PickerColumn({
               <Pressable
                 key={String(v)}
                 onPress={() => onSelect(v)}
-                style={[colStyles.item, isSel && colStyles.itemSel]}
+                style={colStyles.item}
               >
                 <Text style={[colStyles.itemText, isSel && [colStyles.itemTextSel, { color: accentColor }]]}>
                   {renderLabel ? renderLabel(v) : String(v).padStart(2, '0')}
@@ -108,11 +132,7 @@ export function TimePickerModal({ visible: visProp, value, title, onConfirm, onC
   const minutes = Array.from({ length: 60 }, (_, i) => i);
   const periods: ('AM' | 'PM')[] = ['AM', 'PM'];
 
-  const formatPreview = () => {
-    const hStr = String(hour).padStart(2, '0');
-    const mStr = String(minute).padStart(2, '0');
-    return `${hStr}:${mStr} ${period}`;
-  };
+  const formatPreview = () => `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${period}`;
 
   const handleConfirm = () => {
     const d = new Date(value);
@@ -125,83 +145,132 @@ export function TimePickerModal({ visible: visProp, value, title, onConfirm, onC
   return (
     <Modal visible={visProp} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.overlay}>
-        <View style={styles.modal}>
-          {/* Top highlight */}
-          <View style={styles.topHighlight} />
-          {/* Handle */}
-          <View style={styles.handle} />
-          <Text style={styles.title}>{title}</Text>
+        {/* Modal panel — strong blur glass */}
+        <View style={styles.modalOuter}>
+          <BlurView intensity={85} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.xxl }]} />
+          {/* Dark tinted fill */}
+          <View style={[StyleSheet.absoluteFill, styles.modalFill, { borderRadius: Radius.xxl }]} />
+          {/* Specular shimmer */}
+          <LinearGradient
+            colors={['rgba(255,255,255,0.28)', 'rgba(255,255,255,0.00)']}
+            style={[styles.modalShimmer, { borderTopLeftRadius: Radius.xxl, borderTopRightRadius: Radius.xxl }]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            pointerEvents="none"
+          />
+          {/* Top bright line */}
+          <View style={styles.modalTopLine} />
 
-          {/* Preview — glowing */}
-          <View style={[styles.previewRow, { borderColor: accent.primary + '50', backgroundColor: accent.primary + '12' }]}>
-            <View style={[styles.previewGlow, { backgroundColor: accent.primary + '20' }]} />
-            <Text style={[styles.preview, { color: accent.light }]}>{formatPreview()}</Text>
-          </View>
+          <View style={styles.modalContent}>
+            {/* Handle */}
+            <View style={styles.handle} />
+            <Text style={styles.title}>{title}</Text>
 
-          <View style={styles.pickers}>
-            <PickerColumn
-              items={hours12}
-              selected={hour}
-              onSelect={setHour}
-              label="Hour"
-              renderLabel={(v) => String(v).padStart(2, '0')}
-              visProp={visProp}
-              accentColor={accent.primary}
-            />
-            <Text style={styles.colon}>:</Text>
-            <PickerColumn
-              items={minutes}
-              selected={minute}
-              onSelect={setMinute}
-              label="Min"
-              renderLabel={(v) => String(v).padStart(2, '0')}
-              visProp={visProp}
-              accentColor={accent.primary}
-            />
-            <View style={styles.spacer} />
-            <View style={colStyles.col}>
-              <Text style={colStyles.label}>Period</Text>
-              <View style={styles.ampmCol}>
-                {periods.map((p) => (
-                  <Pressable
-                    key={p}
-                    onPress={() => setPeriod(p)}
-                    style={({ pressed }) => [
-                      styles.ampmBtn,
-                      period === p && [
-                        styles.ampmBtnSel,
-                        {
-                          backgroundColor: accent.primary,
-                          borderColor: accent.light,
-                          shadowColor: accent.primary,
-                        },
-                      ],
-                      pressed && { opacity: 0.8 },
-                    ]}
-                  >
-                    {period === p && <View style={[styles.ampmHighlight, { backgroundColor: accent.light + '30' }]} />}
-                    <Text style={[styles.ampmText, period === p && styles.ampmTextSel]}>{p}</Text>
-                  </Pressable>
-                ))}
+            {/* Preview — glowing glass pill */}
+            <View
+              style={[styles.previewOuter, { borderColor: accent.primary + '55', shadowColor: accent.primary }]}
+            >
+              <BlurView intensity={55} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.lg }]} />
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: accent.primary + '12', borderRadius: Radius.lg }]} />
+              <LinearGradient
+                colors={['rgba(255,255,255,0.20)', 'rgba(255,255,255,0.00)']}
+                style={[StyleSheet.absoluteFill, { borderTopLeftRadius: Radius.lg, borderTopRightRadius: Radius.lg }]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 0.55 }}
+                pointerEvents="none"
+              />
+              <View style={[styles.previewTopLine, { backgroundColor: accent.light + '50' }]} />
+              <Text style={[styles.preview, { color: accent.light }]}>{formatPreview()}</Text>
+            </View>
+
+            <View style={styles.pickers}>
+              <PickerColumn
+                items={hours12}
+                selected={hour}
+                onSelect={setHour}
+                label="Hour"
+                renderLabel={(v) => String(v).padStart(2, '0')}
+                visProp={visProp}
+                accentColor={accent.primary}
+              />
+              <Text style={styles.colon}>:</Text>
+              <PickerColumn
+                items={minutes}
+                selected={minute}
+                onSelect={setMinute}
+                label="Min"
+                renderLabel={(v) => String(v).padStart(2, '0')}
+                visProp={visProp}
+                accentColor={accent.primary}
+              />
+              <View style={styles.spacer} />
+              {/* AM/PM column */}
+              <View style={colStyles.col}>
+                <Text style={colStyles.label}>AM/PM</Text>
+                <View style={styles.ampmCol}>
+                  {periods.map((p) => {
+                    const sel = period === p;
+                    return (
+                      <Pressable
+                        key={p}
+                        onPress={() => setPeriod(p)}
+                        style={({ pressed }) => [
+                          styles.ampmBtn,
+                          sel ? { borderColor: accent.light + '60', shadowColor: accent.primary } : { borderColor: Colors.glassBorder },
+                          pressed && { opacity: 0.8 },
+                        ]}
+                      >
+                        <BlurView intensity={sel ? 65 : 40} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.md }]} />
+                        <View style={[StyleSheet.absoluteFill, { backgroundColor: sel ? accent.primary + '22' : 'rgba(255,255,255,0.04)', borderRadius: Radius.md }]} />
+                        <LinearGradient
+                          colors={['rgba(255,255,255,0.22)', 'rgba(255,255,255,0.00)']}
+                          style={[StyleSheet.absoluteFill, { borderTopLeftRadius: Radius.md, borderTopRightRadius: Radius.md }]}
+                          start={{ x: 0.5, y: 0 }}
+                          end={{ x: 0.5, y: 1 }}
+                          pointerEvents="none"
+                        />
+                        {sel ? (
+                          <View style={[styles.ampmTopLine, { backgroundColor: accent.light + '50' }]} />
+                        ) : null}
+                        <Text style={[styles.ampmText, sel && { color: accent.light, fontWeight: Typography.bold }]}>{p}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
               </View>
             </View>
-          </View>
 
-          <View style={styles.actions}>
-            <Pressable onPress={onCancel} style={[styles.btn, styles.btnCancel]}>
-              <Text style={styles.btnCancelText}>Cancel</Text>
-            </Pressable>
-            <Pressable
-              onPress={handleConfirm}
-              style={({ pressed }) => [
-                styles.btn,
-                { backgroundColor: accent.primary, shadowColor: accent.primary },
-                pressed && { opacity: 0.85 },
-              ]}
-            >
-              <View style={styles.btnHighlight} />
-              <Text style={styles.btnConfirmText}>Set Time</Text>
-            </Pressable>
+            <View style={styles.actions}>
+              <Pressable onPress={onCancel} style={[styles.btn, styles.btnCancel]}>
+                <BlurView intensity={45} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.lg }]} />
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.lg }]} />
+                <LinearGradient
+                  colors={['rgba(255,255,255,0.16)', 'rgba(255,255,255,0.00)']}
+                  style={[StyleSheet.absoluteFill, { borderTopLeftRadius: Radius.lg, borderTopRightRadius: Radius.lg }]}
+                  start={{ x: 0.5, y: 0 }}
+                  end={{ x: 0.5, y: 1 }}
+                  pointerEvents="none"
+                />
+                <Text style={styles.btnCancelText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                onPress={handleConfirm}
+                style={({ pressed }) => [
+                  styles.btn,
+                  { backgroundColor: accent.primary, shadowColor: accent.primary },
+                  pressed && { opacity: 0.85 },
+                ]}
+              >
+                <LinearGradient
+                  colors={['rgba(255,255,255,0.28)', 'rgba(255,255,255,0.00)']}
+                  style={[StyleSheet.absoluteFill, { borderTopLeftRadius: Radius.lg, borderTopRightRadius: Radius.lg }]}
+                  start={{ x: 0.5, y: 0 }}
+                  end={{ x: 0.5, y: 0.55 }}
+                  pointerEvents="none"
+                />
+                <Text style={styles.btnConfirmText}>Set Time</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </View>
@@ -212,233 +281,81 @@ export function TimePickerModal({ visible: visProp, value, title, onConfirm, onC
 const colStyles = StyleSheet.create({
   col: { alignItems: 'center', flex: 1 },
   label: {
-    fontSize: Typography.xs,
-    color: Colors.textMuted,
-    marginBottom: Spacing.sm,
-    fontWeight: Typography.semiBold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    fontSize: Typography.xs, color: Colors.textMuted, marginBottom: Spacing.sm,
+    fontWeight: Typography.semiBold, textTransform: 'uppercase', letterSpacing: 0.8,
   },
   scrollWrap: {
-    height: ITEM_HEIGHT * 5,
-    width: '100%',
-    position: 'relative',
-    overflow: 'hidden',
-    borderRadius: Radius.md,
+    height: ITEM_HEIGHT * 5, width: '100%', position: 'relative', overflow: 'hidden', borderRadius: Radius.md,
   },
   highlight: {
-    position: 'absolute',
-    top: ITEM_HEIGHT * 2,
-    left: 4,
-    right: 4,
-    height: ITEM_HEIGHT,
-    borderRadius: Radius.md,
-    borderWidth: 1,
-    zIndex: 1,
+    position: 'absolute', top: ITEM_HEIGHT * 2, left: 4, right: 4, height: ITEM_HEIGHT,
+    borderRadius: Radius.md, borderWidth: 1, zIndex: 1, overflow: 'hidden',
   },
   fadeTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: ITEM_HEIGHT * 2,
-    backgroundColor: 'rgba(6,4,15,0.65)',
-    zIndex: 2,
-    pointerEvents: 'none',
+    position: 'absolute', top: 0, left: 0, right: 0, height: ITEM_HEIGHT * 2, zIndex: 2,
   },
   fadeBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: ITEM_HEIGHT * 2,
-    backgroundColor: 'rgba(6,4,15,0.65)',
-    zIndex: 2,
-    pointerEvents: 'none',
+    position: 'absolute', bottom: 0, left: 0, right: 0, height: ITEM_HEIGHT * 2, zIndex: 2,
   },
   scroll: { flex: 1 },
-  item: {
-    height: ITEM_HEIGHT,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: Radius.md,
-    marginHorizontal: 4,
-  },
-  itemSel: {},
-  itemText: {
-    fontSize: Typography.md,
-    color: Colors.textMuted,
-    fontWeight: Typography.medium,
-  },
-  itemTextSel: {
-    fontWeight: Typography.extraBold,
-    fontSize: Typography.xl,
-  },
+  item: { height: ITEM_HEIGHT, alignItems: 'center', justifyContent: 'center', borderRadius: Radius.md, marginHorizontal: 4 },
+  itemText: { fontSize: Typography.md, color: Colors.textMuted, fontWeight: Typography.medium },
+  itemTextSel: { fontWeight: Typography.extraBold, fontSize: Typography.xl },
 });
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.80)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.xl,
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'center',
+    alignItems: 'center', paddingHorizontal: Spacing.xl,
   },
-  modal: {
-    backgroundColor: 'rgba(18,14,40,0.95)',
-    borderRadius: Radius.xxl,
-    padding: Spacing.xl,
-    width: '100%',
-    borderWidth: 1,
-    borderColor: Colors.glassBorder,
+  modalOuter: {
+    width: '100%', borderRadius: Radius.xxl, borderWidth: 1, borderColor: 'rgba(255,255,255,0.20)',
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.6,
-    shadowRadius: 40,
-    elevation: 20,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 24 }, shadowOpacity: 0.65, shadowRadius: 48, elevation: 24,
   },
-  topHighlight: {
-    position: 'absolute',
-    top: 0,
-    left: 20,
-    right: 20,
-    height: 1,
-    backgroundColor: Colors.glassHighlight,
-    borderRadius: Radius.full,
+  modalFill: { backgroundColor: 'rgba(4,3,12,0.55)' },
+  modalShimmer: { position: 'absolute', top: 0, left: 0, right: 0, height: 60 },
+  modalTopLine: {
+    position: 'absolute', top: 0, left: Radius.xxl * 0.5, right: Radius.xxl * 0.5,
+    height: 1, backgroundColor: 'rgba(255,255,255,0.55)',
   },
+  modalContent: { padding: Spacing.xl },
   handle: {
-    width: 36,
-    height: 4,
-    backgroundColor: Colors.glassBorder,
-    borderRadius: Radius.full,
-    alignSelf: 'center',
-    marginBottom: Spacing.base,
+    width: 36, height: 4, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: Radius.full, alignSelf: 'center', marginBottom: Spacing.base,
   },
   title: {
-    fontSize: Typography.lg,
-    fontWeight: Typography.bold,
-    color: Colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: Spacing.base,
+    fontSize: Typography.lg, fontWeight: Typography.bold, color: Colors.textPrimary, textAlign: 'center', marginBottom: Spacing.base,
   },
-  previewRow: {
-    alignItems: 'center',
-    marginBottom: Spacing.base,
-    paddingVertical: Spacing.md,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    overflow: 'hidden',
+  // Preview pill
+  previewOuter: {
+    alignItems: 'center', marginBottom: Spacing.base, paddingVertical: Spacing.md,
+    borderRadius: Radius.lg, borderWidth: 1, overflow: 'hidden',
+    shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.50, shadowRadius: 16, elevation: 8,
   },
-  previewGlow: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '60%',
-    borderBottomLeftRadius: Radius.lg,
-    borderBottomRightRadius: Radius.lg,
-  },
-  preview: {
-    fontSize: Typography.xxl,
-    fontWeight: Typography.extraBold,
-    letterSpacing: 3,
-  },
+  previewTopLine: { position: 'absolute', top: 0, left: Radius.lg * 0.5, right: Radius.lg * 0.5, height: 1 },
+  preview: { fontSize: Typography.xxl, fontWeight: Typography.extraBold, letterSpacing: 3 },
   pickers: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    marginBottom: Spacing.base,
+    flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', marginBottom: Spacing.base,
   },
   colon: {
-    fontSize: Typography.xxl,
-    color: Colors.textSecondary,
-    marginTop: ITEM_HEIGHT * 2 + 28,
-    paddingHorizontal: 2,
-    fontWeight: Typography.bold,
+    fontSize: Typography.xxl, color: Colors.textSecondary, marginTop: ITEM_HEIGHT * 2 + 28,
+    paddingHorizontal: 2, fontWeight: Typography.bold,
   },
   spacer: { width: Spacing.md },
-  ampmCol: {
-    gap: Spacing.md,
-    marginTop: ITEM_HEIGHT * 2,
-  },
+  ampmCol: { gap: Spacing.md, marginTop: ITEM_HEIGHT * 2 },
   ampmBtn: {
-    width: 58,
-    height: ITEM_HEIGHT,
-    borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.glass,
-    borderWidth: 1,
-    borderColor: Colors.glassBorder,
-    overflow: 'hidden',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0,
-    shadowRadius: 10,
-    elevation: 0,
+    width: 62, height: ITEM_HEIGHT, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, overflow: 'hidden',
+    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.30, shadowRadius: 10, elevation: 5,
   },
-  ampmBtnSel: {
-    shadowOpacity: 0.5,
-    elevation: 6,
-  },
-  ampmHighlight: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '45%',
-    borderTopLeftRadius: Radius.md,
-    borderTopRightRadius: Radius.md,
-  },
-  ampmText: {
-    fontSize: Typography.base,
-    fontWeight: Typography.semiBold,
-    color: Colors.textMuted,
-  },
-  ampmTextSel: {
-    color: Colors.textOnPrimary,
-    fontWeight: Typography.bold,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
+  ampmTopLine: { position: 'absolute', top: 0, left: 6, right: 6, height: 1 },
+  ampmText: { fontSize: Typography.base, fontWeight: Typography.semiBold, color: Colors.textSecondary },
+  actions: { flexDirection: 'row', gap: Spacing.md },
   btn: {
-    flex: 1,
-    paddingVertical: Spacing.md + 2,
-    borderRadius: Radius.lg,
-    alignItems: 'center',
-    overflow: 'hidden',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    flex: 1, paddingVertical: Spacing.md + 2, borderRadius: Radius.lg, alignItems: 'center',
+    overflow: 'hidden', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.45, shadowRadius: 14, elevation: 8,
   },
-  btnHighlight: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '45%',
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    borderTopLeftRadius: Radius.lg,
-    borderTopRightRadius: Radius.lg,
-  },
-  btnCancel: {
-    backgroundColor: Colors.glass,
-    borderWidth: 1,
-    borderColor: Colors.glassBorder,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  btnCancelText: {
-    color: Colors.textSecondary,
-    fontWeight: Typography.medium,
-    fontSize: Typography.base,
-  },
-  btnConfirmText: {
-    color: Colors.textOnPrimary,
-    fontWeight: Typography.semiBold,
-    fontSize: Typography.base,
-  },
+  btnCancel: { borderWidth: 1, borderColor: Colors.glassBorder, shadowOpacity: 0, elevation: 0 },
+  btnCancelText: { color: Colors.textSecondary, fontWeight: Typography.medium, fontSize: Typography.base },
+  btnConfirmText: { color: Colors.textOnPrimary, fontWeight: Typography.semiBold, fontSize: Typography.base },
 });

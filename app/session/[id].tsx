@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSessions } from '@/hooks/useSessions';
@@ -63,12 +65,15 @@ export default function SessionDetailScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {/* Background glow */}
-      <View style={[styles.glowBlob, { backgroundColor: accent.primary + '18' }]} pointerEvents="none" />
+      {/* Radial glow */}
+      <View style={[styles.glow, { backgroundColor: accent.primary + '1A' }]} pointerEvents="none" />
 
       {/* Nav */}
       <View style={styles.nav}>
         <Pressable onPress={() => router.back()} hitSlop={8} style={styles.navBtn}>
+          <BlurView intensity={55} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]} />
+          <View style={[StyleSheet.absoluteFill, styles.navBtnFill, { borderRadius: Radius.full }]} />
+          <View style={styles.navBtnTopLine} />
           <MaterialIcons name="arrow-back" size={22} color={Colors.textPrimary} />
         </Pressable>
         <View style={styles.navCenter}>
@@ -76,56 +81,76 @@ export default function SessionDetailScreen() {
           <Text style={styles.navSub}>{StorageService.formatDuration(session.durationMinutes)} sleep</Text>
         </View>
         <Pressable onPress={handleDeleteSession} hitSlop={8} style={[styles.navBtn, styles.navBtnDelete]}>
+          <BlurView intensity={55} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]} />
+          <View style={[StyleSheet.absoluteFill, styles.navBtnDeleteFill, { borderRadius: Radius.full }]} />
+          <View style={styles.navBtnTopLine} />
           <MaterialIcons name="delete-outline" size={22} color={Colors.error} />
         </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Sleep summary — liquid glass card */}
-        <View style={[styles.summaryCard, { borderColor: accent.primary + '40', shadowColor: accent.primary }]}>
-          <View style={styles.summaryHighlight} />
-          {/* Glow top wash */}
-          <View style={[styles.glowTop, { backgroundColor: accent.primary + '12' }]} />
 
-          <View style={styles.timesRow}>
-            <View style={styles.timeBlock}>
-              <View style={[styles.timeIcon, { backgroundColor: accent.primary + '20', borderColor: accent.primary + '35' }]}>
-                <MaterialIcons name="bedtime" size={18} color={accent.light} />
+        {/* ── Sleep summary card — liquid glass ── */}
+        <View
+          style={[styles.summaryOuter, { borderColor: accent.primary + '38', shadowColor: accent.primary }]}
+        >
+          <BlurView intensity={70} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.xxl }]} />
+          <View style={[StyleSheet.absoluteFill, styles.summaryFill]} />
+          <LinearGradient
+            colors={[accent.primary + '18', 'transparent']}
+            style={[StyleSheet.absoluteFill, { borderRadius: Radius.xxl }]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0.7 }}
+            pointerEvents="none"
+          />
+          <LinearGradient
+            colors={['rgba(255,255,255,0.32)', 'rgba(255,255,255,0.00)']}
+            style={[styles.summaryShimmer, { borderTopLeftRadius: Radius.xxl, borderTopRightRadius: Radius.xxl }]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            pointerEvents="none"
+          />
+          <View style={styles.summaryTopLine} />
+
+          <View style={styles.summaryContent}>
+            <View style={styles.timesRow}>
+              <View style={styles.timeBlock}>
+                <View style={[styles.timeIcon, { backgroundColor: accent.primary + '22', borderColor: accent.primary + '38' }]}>
+                  <MaterialIcons name="bedtime" size={18} color={accent.light} />
+                </View>
+                <Text style={styles.timeLabel}>Bedtime</Text>
+                <Text style={styles.timeValue}>{StorageService.formatTime(session.bedtime)}</Text>
               </View>
-              <Text style={styles.timeLabel}>Bedtime</Text>
-              <Text style={styles.timeValue}>{StorageService.formatTime(session.bedtime)}</Text>
+              <View style={styles.durationCenter}>
+                <Text style={[styles.durationBig, { color: accent.light }]}>
+                  {StorageService.formatDuration(session.durationMinutes)}
+                </Text>
+                <Text style={styles.durationLabel}>total sleep</Text>
+              </View>
+              <View style={styles.timeBlock}>
+                <View style={[styles.timeIcon, { backgroundColor: Colors.accent + '22', borderColor: Colors.accent + '38' }]}>
+                  <MaterialIcons name="wb-sunny" size={18} color={Colors.accent} />
+                </View>
+                <Text style={styles.timeLabel}>Wake up</Text>
+                <Text style={styles.timeValue}>{StorageService.formatTime(session.wakeTime)}</Text>
+              </View>
             </View>
 
-            <View style={styles.durationCenter}>
-              <Text style={[styles.durationBig, { color: accent.light }]}>
-                {StorageService.formatDuration(session.durationMinutes)}
-              </Text>
-              <Text style={styles.durationLabel}>total sleep</Text>
+            <View style={styles.divider} />
+
+            <View style={styles.ratingRow}>
+              <StarRating value={session.qualityRating} readonly size={24} />
+              {mood ? (
+                <View style={[styles.moodBadge, { backgroundColor: accent.primary + '18', borderColor: accent.primary + '40' }]}>
+                  <Text style={styles.moodEmoji}>{mood.emoji}</Text>
+                  <Text style={styles.moodLabel}>{mood.label}</Text>
+                </View>
+              ) : null}
             </View>
-
-            <View style={styles.timeBlock}>
-              <View style={[styles.timeIcon, { backgroundColor: Colors.accent + '20', borderColor: Colors.accent + '35' }]}>
-                <MaterialIcons name="wb-sunny" size={18} color={Colors.accent} />
-              </View>
-              <Text style={styles.timeLabel}>Wake up</Text>
-              <Text style={styles.timeValue}>{StorageService.formatTime(session.wakeTime)}</Text>
-            </View>
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.ratingRow}>
-            <StarRating value={session.qualityRating} readonly size={24} />
-            {mood ? (
-              <View style={[styles.moodBadge, { backgroundColor: accent.primary + '18', borderColor: accent.primary + '40' }]}>
-                <Text style={styles.moodEmoji}>{mood.emoji}</Text>
-                <Text style={styles.moodLabel}>{mood.label}</Text>
-              </View>
-            ) : null}
           </View>
         </View>
 
-        {/* Dreams section */}
+        {/* ── Dreams header ── */}
         <View style={styles.dreamsHeader}>
           <View>
             <Text style={styles.sectionTitle}>Dreams</Text>
@@ -139,7 +164,13 @@ export default function SessionDetailScreen() {
               pressed && { opacity: 0.8 },
             ]}
           >
-            <View style={styles.addDreamBtnHighlight} />
+            <LinearGradient
+              colors={['rgba(255,255,255,0.28)', 'rgba(255,255,255,0.00)']}
+              style={[StyleSheet.absoluteFill, { borderRadius: Radius.lg }]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 0.55 }}
+              pointerEvents="none"
+            />
             <MaterialIcons name="add" size={18} color={Colors.textOnPrimary} />
             <Text style={styles.addDreamText}>Add Dream</Text>
           </Pressable>
@@ -149,17 +180,28 @@ export default function SessionDetailScreen() {
           <Pressable
             onPress={() => router.push({ pathname: '/dream/edit', params: { sessionId: session.id } })}
             style={({ pressed }) => [
-              styles.emptyDreams,
-              { borderColor: accent.primary + '40' },
+              styles.emptyDreamsOuter,
+              { borderColor: accent.primary + '38', shadowColor: accent.primary },
               pressed && { opacity: 0.8 },
             ]}
           >
-            <View style={styles.emptyDreamsHighlight} />
-            <View style={[styles.emptyDreamIcon, { backgroundColor: accent.primary + '15', borderColor: accent.primary + '30' }]}>
-              <MaterialIcons name="cloud" size={32} color={accent.primary} />
+            <BlurView intensity={55} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.xxl }]} />
+            <View style={[StyleSheet.absoluteFill, styles.emptyFill]} />
+            <LinearGradient
+              colors={['rgba(255,255,255,0.22)', 'rgba(255,255,255,0.00)']}
+              style={[styles.emptyShimmer, { borderTopLeftRadius: Radius.xxl, borderTopRightRadius: Radius.xxl }]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 1 }}
+              pointerEvents="none"
+            />
+            <View style={styles.emptyTopLine} />
+            <View style={styles.emptyContent}>
+              <View style={[styles.emptyDreamIcon, { backgroundColor: accent.primary + '18', borderColor: accent.primary + '35' }]}>
+                <MaterialIcons name="cloud" size={32} color={accent.primary} />
+              </View>
+              <Text style={styles.emptyDreamsTitle}>No dreams logged yet</Text>
+              <Text style={styles.emptyDreamsText}>Tap to write about the dreams you remember from this night.</Text>
             </View>
-            <Text style={styles.emptyDreamsTitle}>No dreams logged yet</Text>
-            <Text style={styles.emptyDreamsText}>Tap to write about the dreams you remember from this night.</Text>
           </Pressable>
         ) : (
           session.dreams.map((dream) => (
@@ -178,13 +220,13 @@ export default function SessionDetailScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.bg },
-  glowBlob: {
+  glow: {
     position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    top: -80,
-    right: -60,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    top: -90,
+    right: -70,
   },
   nav: {
     flexDirection: 'row',
@@ -194,24 +236,30 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   navBtn: {
-    width: 42,
-    height: 42,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.bgCard,
     borderRadius: Radius.full,
     borderWidth: 1,
     borderColor: Colors.glassBorder,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.20,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  navBtnDelete: {
-    backgroundColor: 'rgba(255,96,112,0.10)',
-    borderColor: 'rgba(255,96,112,0.25)',
+  navBtnFill: { backgroundColor: 'rgba(255,255,255,0.07)' },
+  navBtnDelete: { borderColor: 'rgba(255,96,112,0.28)' },
+  navBtnDeleteFill: { backgroundColor: 'rgba(255,96,112,0.08)' },
+  navBtnTopLine: {
+    position: 'absolute',
+    top: 0,
+    left: 8,
+    right: 8,
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.45)',
   },
   navCenter: { alignItems: 'center' },
   navTitle: { fontSize: Typography.base, fontWeight: Typography.bold, color: Colors.textPrimary },
@@ -219,35 +267,27 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: Spacing.base, paddingBottom: Spacing.xxxl },
 
   // Summary card
-  summaryCard: {
-    backgroundColor: Colors.bgCard,
+  summaryOuter: {
     borderRadius: Radius.xxl,
-    padding: Spacing.base,
     borderWidth: 1,
     marginBottom: Spacing.xl,
     overflow: 'hidden',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.35,
-    shadowRadius: 24,
-    elevation: 14,
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.45,
+    shadowRadius: 30,
+    elevation: 16,
   },
-  summaryHighlight: {
+  summaryFill: { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: Radius.xxl },
+  summaryShimmer: { position: 'absolute', top: 0, left: 0, right: 0, height: 60 },
+  summaryTopLine: {
     position: 'absolute',
     top: 0,
-    left: 20,
-    right: 20,
+    left: Radius.xxl * 0.5,
+    right: Radius.xxl * 0.5,
     height: 1,
-    backgroundColor: Colors.glassHighlight,
+    backgroundColor: 'rgba(255,255,255,0.52)',
   },
-  glowTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-    borderTopLeftRadius: Radius.xxl,
-    borderTopRightRadius: Radius.xxl,
-  },
+  summaryContent: { padding: Spacing.base },
   timesRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -300,40 +340,35 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderRadius: Radius.lg,
     overflow: 'hidden',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  addDreamBtnHighlight: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '45%',
-    backgroundColor: 'rgba(255,255,255,0.20)',
-    borderTopLeftRadius: Radius.lg,
-    borderTopRightRadius: Radius.lg,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+    elevation: 8,
   },
   addDreamText: { fontSize: Typography.sm, fontWeight: Typography.semiBold, color: Colors.textOnPrimary },
-  emptyDreams: {
-    backgroundColor: Colors.bgCard,
+
+  // Empty dreams
+  emptyDreamsOuter: {
     borderRadius: Radius.xxl,
-    padding: Spacing.xxl,
-    alignItems: 'center',
-    gap: Spacing.md,
     borderWidth: 1,
     borderStyle: 'dashed',
     overflow: 'hidden',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.30,
+    shadowRadius: 18,
+    elevation: 8,
   },
-  emptyDreamsHighlight: {
+  emptyFill: { backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: Radius.xxl },
+  emptyShimmer: { position: 'absolute', top: 0, left: 0, right: 0, height: 50 },
+  emptyTopLine: {
     position: 'absolute',
     top: 0,
-    left: 20,
-    right: 20,
+    left: Radius.xxl * 0.5,
+    right: Radius.xxl * 0.5,
     height: 1,
-    backgroundColor: Colors.glassHighlight,
+    backgroundColor: 'rgba(255,255,255,0.38)',
   },
+  emptyContent: { padding: Spacing.xxl, alignItems: 'center', gap: Spacing.md },
   emptyDreamIcon: {
     width: 64,
     height: 64,

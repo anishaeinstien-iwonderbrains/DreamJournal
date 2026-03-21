@@ -1,11 +1,76 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSessions } from '@/hooks/useSessions';
 import { useTheme } from '@/hooks/useTheme';
 import { Colors, Typography, Spacing, Radius, DREAM_TAGS, WAKE_MOODS } from '@/constants/theme';
 import { StarRating } from '@/components/ui/StarRating';
+
+// Reusable liquid-glass panel
+function GlassPanel({
+  children,
+  accentColor,
+  style,
+}: {
+  children: React.ReactNode;
+  accentColor: string;
+  style?: any;
+}) {
+  return (
+    <View
+      style={[
+        glassStyles.outer,
+        { borderColor: accentColor + '28', shadowColor: accentColor },
+        style,
+      ]}
+    >
+      <BlurView intensity={60} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.xl }]} />
+      <View style={[StyleSheet.absoluteFill, glassStyles.fill]} />
+      <LinearGradient
+        colors={[accentColor + '10', 'transparent']}
+        style={[StyleSheet.absoluteFill, { borderRadius: Radius.xl }]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 0.6 }}
+        pointerEvents="none"
+      />
+      <LinearGradient
+        colors={['rgba(255,255,255,0.26)', 'rgba(255,255,255,0.00)']}
+        style={[glassStyles.shimmer, { borderTopLeftRadius: Radius.xl, borderTopRightRadius: Radius.xl }]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        pointerEvents="none"
+      />
+      <View style={glassStyles.topLine} />
+      <View style={glassStyles.content}>{children}</View>
+    </View>
+  );
+}
+
+const glassStyles = StyleSheet.create({
+  outer: {
+    borderRadius: Radius.xl,
+    borderWidth: 1,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  fill: { backgroundColor: 'rgba(255,255,255,0.055)', borderRadius: Radius.xl },
+  shimmer: { position: 'absolute', top: 0, left: 0, right: 0, height: 48 },
+  topLine: {
+    position: 'absolute',
+    top: 0,
+    left: Radius.xl * 0.5,
+    right: Radius.xl * 0.5,
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.48)',
+  },
+  content: { padding: Spacing.xl },
+});
 
 function StatCard({
   icon,
@@ -21,14 +86,37 @@ function StatCard({
   accentColor: string;
 }) {
   return (
-    <View style={[styles.statCard, { borderColor: accentColor + '35', shadowColor: accentColor }]}>
-      <View style={styles.statCardHighlight} />
-      <View style={[styles.statIconWrap, { backgroundColor: accentColor + '22' }]}>
-        <MaterialIcons name={icon as any} size={22} color={accentColor} />
+    <View
+      style={[
+        styles.statCard,
+        { borderColor: accentColor + '30', shadowColor: accentColor },
+      ]}
+    >
+      <BlurView intensity={60} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.xl }]} />
+      <View style={[StyleSheet.absoluteFill, styles.statFill]} />
+      <LinearGradient
+        colors={[accentColor + '18', 'transparent']}
+        style={[StyleSheet.absoluteFill, { borderRadius: Radius.xl }]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 0.65 }}
+        pointerEvents="none"
+      />
+      <LinearGradient
+        colors={['rgba(255,255,255,0.26)', 'rgba(255,255,255,0.00)']}
+        style={[styles.statShimmer, { borderTopLeftRadius: Radius.xl, borderTopRightRadius: Radius.xl }]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        pointerEvents="none"
+      />
+      <View style={styles.statTopLine} />
+      <View style={styles.statContent}>
+        <View style={[styles.statIconWrap, { backgroundColor: accentColor + '20' }]}>
+          <MaterialIcons name={icon as any} size={22} color={accentColor} />
+        </View>
+        <Text style={[styles.statValue, { color: accentColor }]}>{value}</Text>
+        {sub ? <Text style={styles.statSub}>{sub}</Text> : null}
+        <Text style={styles.statLabel}>{label}</Text>
       </View>
-      <Text style={[styles.statValue, { color: accentColor }]}>{value}</Text>
-      {sub ? <Text style={styles.statSub}>{sub}</Text> : null}
-      <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
@@ -50,7 +138,9 @@ export default function InsightsScreen() {
 
   const tagFrequency = useMemo(() => {
     const tagCount: Record<string, number> = {};
-    sessions.forEach((s) => s.dreams.forEach((d) => d.tags.forEach((t) => { tagCount[t] = (tagCount[t] || 0) + 1; })));
+    sessions.forEach((s) =>
+      s.dreams.forEach((d) => d.tags.forEach((t) => { tagCount[t] = (tagCount[t] || 0) + 1; }))
+    );
     return Object.entries(tagCount).sort((a, b) => b[1] - a[1]).slice(0, 6);
   }, [sessions]);
 
@@ -59,13 +149,13 @@ export default function InsightsScreen() {
   if (sessions.length === 0) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
-        <View style={[styles.glowBlob, { backgroundColor: accent.primary + '15' }]} pointerEvents="none" />
+        <View style={[styles.glow, { backgroundColor: accent.primary + '18' }]} pointerEvents="none" />
         <View style={styles.emptyState}>
-          <View style={[styles.emptyIcon, { backgroundColor: accent.primary + '18', borderColor: accent.primary + '35' }]}>
+          <View style={[styles.emptyIconWrap, { backgroundColor: accent.primary + '15', borderColor: accent.primary + '35' }]}>
             <MaterialIcons name="insights" size={48} color={accent.primary} />
           </View>
           <Text style={styles.emptyTitle}>No insights yet</Text>
-          <Text style={styles.emptyText}>Log some sleep sessions to see patterns and statistics about your dreams.</Text>
+          <Text style={styles.emptyText}>Log some sleep sessions to see patterns and statistics.</Text>
         </View>
       </SafeAreaView>
     );
@@ -73,7 +163,7 @@ export default function InsightsScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={[styles.glowBlob, { backgroundColor: accent.primary + '15' }]} pointerEvents="none" />
+      <View style={[styles.glow, { backgroundColor: accent.primary + '18' }]} pointerEvents="none" />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.pageTitle}>Insights</Text>
         <Text style={styles.pageSubtitle}>Based on {sessions.length} night{sessions.length !== 1 ? 's' : ''} of data</Text>
@@ -86,27 +176,25 @@ export default function InsightsScreen() {
           <StatCard icon="star" label="Avg quality" value={stats ? stats.avgQuality.toFixed(1) : '--'} sub="out of 5" accentColor={Colors.accentSoft} />
         </View>
 
-        {/* Average quality */}
+        {/* Quality */}
         {stats ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Sleep Quality</Text>
-            <View style={[styles.glassCard, { borderColor: accent.primary + '30' }]}>
-              <View style={styles.glassCardHighlight} />
+            <GlassPanel accentColor={accent.primary}>
               <StarRating value={Math.round(stats.avgQuality)} readonly size={34} />
               <View style={styles.qualityMeta}>
                 <Text style={[styles.qualityBig, { color: accent.light }]}>{stats.avgQuality.toFixed(1)}</Text>
                 <Text style={styles.qualityOf}>/ 5.0 average</Text>
               </View>
-            </View>
+            </GlassPanel>
           </View>
         ) : null}
 
-        {/* Dream tag breakdown */}
+        {/* Dream tags */}
         {tagFrequency.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Dream Tags</Text>
-            <View style={[styles.glassCard, { borderColor: Colors.glassBorder }]}>
-              <View style={styles.glassCardHighlight} />
+            <GlassPanel accentColor={Colors.glassBorder}>
               {tagFrequency.map(([tagId, count]) => {
                 const tag = DREAM_TAGS.find((t) => t.id === tagId);
                 if (!tag) return null;
@@ -122,11 +210,11 @@ export default function InsightsScreen() {
                   </View>
                 );
               })}
-            </View>
+            </GlassPanel>
           </View>
         ) : null}
 
-        {/* Wake moods */}
+        {/* Moods */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Wake-up Moods</Text>
           <View style={styles.moodGrid}>
@@ -135,12 +223,26 @@ export default function InsightsScreen() {
               if (count === 0) return null;
               const pct = Math.round((count / sessions.length) * 100);
               return (
-                <View key={mood.id} style={[styles.moodItem, { borderColor: accent.primary + '30' }]}>
-                  <View style={styles.moodItemHighlight} />
-                  <Text style={styles.moodEmoji}>{mood.emoji}</Text>
-                  <Text style={[styles.moodCount, { color: accent.light }]}>{count}x</Text>
-                  <Text style={styles.moodLabel}>{mood.label}</Text>
-                  <Text style={styles.moodPct}>{pct}%</Text>
+                <View
+                  key={mood.id}
+                  style={[styles.moodItem, { borderColor: accent.primary + '28', shadowColor: accent.primary }]}
+                >
+                  <BlurView intensity={55} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.xl }]} />
+                  <View style={[StyleSheet.absoluteFill, styles.moodFill]} />
+                  <LinearGradient
+                    colors={['rgba(255,255,255,0.22)', 'rgba(255,255,255,0.00)']}
+                    style={[styles.moodShimmer, { borderTopLeftRadius: Radius.xl, borderTopRightRadius: Radius.xl }]}
+                    start={{ x: 0.5, y: 0 }}
+                    end={{ x: 0.5, y: 1 }}
+                    pointerEvents="none"
+                  />
+                  <View style={styles.moodTopLine} />
+                  <View style={styles.moodContent}>
+                    <Text style={styles.moodEmoji}>{mood.emoji}</Text>
+                    <Text style={[styles.moodCount, { color: accent.light }]}>{count}x</Text>
+                    <Text style={styles.moodLabel}>{mood.label}</Text>
+                    <Text style={styles.moodPct}>{pct}%</Text>
+                  </View>
                 </View>
               );
             })}
@@ -153,13 +255,13 @@ export default function InsightsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.bg },
-  glowBlob: {
+  glow: {
     position: 'absolute',
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    top: -60,
-    right: -60,
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    top: -70,
+    right: -70,
   },
   content: { paddingHorizontal: Spacing.base, paddingBottom: Spacing.xxxl },
   pageTitle: {
@@ -176,35 +278,29 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
     fontWeight: Typography.medium,
   },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.md,
-    marginBottom: Spacing.xl,
-  },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, marginBottom: Spacing.xl },
   statCard: {
     flex: 1,
     minWidth: '45%',
-    backgroundColor: Colors.bgCard,
     borderRadius: Radius.xl,
-    padding: Spacing.base,
-    alignItems: 'center',
-    gap: Spacing.xs,
     borderWidth: 1,
     overflow: 'hidden',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.30,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.40,
+    shadowRadius: 20,
+    elevation: 10,
   },
-  statCardHighlight: {
+  statFill: { backgroundColor: 'rgba(255,255,255,0.055)', borderRadius: Radius.xl },
+  statShimmer: { position: 'absolute', top: 0, left: 0, right: 0, height: 46 },
+  statTopLine: {
     position: 'absolute',
     top: 0,
-    left: 12,
-    right: 12,
+    left: Radius.xl * 0.5,
+    right: Radius.xl * 0.5,
     height: 1,
-    backgroundColor: Colors.glassHighlight,
+    backgroundColor: 'rgba(255,255,255,0.46)',
   },
+  statContent: { padding: Spacing.base, alignItems: 'center', gap: Spacing.xs },
   statIconWrap: {
     width: 44,
     height: 44,
@@ -213,11 +309,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: Spacing.xs,
   },
-  statValue: {
-    fontSize: Typography.xxl,
-    fontWeight: Typography.extraBold,
-    letterSpacing: -0.5,
-  },
+  statValue: { fontSize: Typography.xxl, fontWeight: Typography.extraBold, letterSpacing: -0.5 },
   statSub: { fontSize: Typography.xs, color: Colors.textMuted, fontWeight: Typography.medium },
   statLabel: { fontSize: Typography.xs, color: Colors.textMuted, textAlign: 'center', fontWeight: Typography.medium },
   section: { marginBottom: Spacing.xl },
@@ -229,126 +321,47 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
-  glassCard: {
-    backgroundColor: Colors.bgCard,
-    borderRadius: Radius.xl,
-    padding: Spacing.xl,
-    alignItems: 'center',
-    gap: Spacing.md,
-    borderWidth: 1,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
-    elevation: 8,
-  },
-  glassCardHighlight: {
-    position: 'absolute',
-    top: 0,
-    left: 16,
-    right: 16,
-    height: 1,
-    backgroundColor: Colors.glassHighlight,
-  },
-  qualityMeta: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.sm },
-  qualityBig: {
-    fontSize: Typography.xxl,
-    fontWeight: Typography.extraBold,
-  },
+  qualityMeta: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.sm, marginTop: Spacing.sm },
+  qualityBig: { fontSize: Typography.xxl, fontWeight: Typography.extraBold },
   qualityOf: { fontSize: Typography.sm, color: Colors.textMuted },
-  tagRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    width: '100%',
-  },
+  tagRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, width: '100%', marginBottom: Spacing.sm },
   tagDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 2,
+    width: 8, height: 8, borderRadius: 4,
+    shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.9, shadowRadius: 4, elevation: 2,
   },
-  tagName: {
-    fontSize: Typography.sm,
-    fontWeight: Typography.semiBold,
-    width: 76,
-  },
+  tagName: { fontSize: Typography.sm, fontWeight: Typography.semiBold, width: 76 },
   barTrack: {
-    flex: 1,
-    height: 6,
-    backgroundColor: Colors.glass,
-    borderRadius: Radius.full,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Colors.glassBorder,
+    flex: 1, height: 6, backgroundColor: Colors.glass, borderRadius: Radius.full,
+    overflow: 'hidden', borderWidth: 1, borderColor: Colors.glassBorder,
   },
-  barFill: { height: '100%', borderRadius: Radius.full, opacity: 0.75 },
-  tagCount: {
-    fontSize: Typography.sm,
-    fontWeight: Typography.bold,
-    color: Colors.textSecondary,
-    width: 20,
-    textAlign: 'right',
-  },
+  barFill: { height: '100%', borderRadius: Radius.full, opacity: 0.80 },
+  tagCount: { fontSize: Typography.sm, fontWeight: Typography.bold, color: Colors.textSecondary, width: 20, textAlign: 'right' },
   moodGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
   moodItem: {
-    backgroundColor: Colors.bgCard,
     borderRadius: Radius.xl,
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.md,
-    alignItems: 'center',
-    gap: 3,
     borderWidth: 1,
     minWidth: 80,
     flex: 1,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.20,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.30,
+    shadowRadius: 14,
+    elevation: 8,
   },
-  moodItemHighlight: {
-    position: 'absolute',
-    top: 0,
-    left: 8,
-    right: 8,
-    height: 1,
-    backgroundColor: Colors.glassHighlight,
+  moodFill: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Radius.xl },
+  moodShimmer: { position: 'absolute', top: 0, left: 0, right: 0, height: 40 },
+  moodTopLine: {
+    position: 'absolute', top: 0,
+    left: Radius.xl * 0.35, right: Radius.xl * 0.35,
+    height: 1, backgroundColor: 'rgba(255,255,255,0.42)',
   },
+  moodContent: { padding: Spacing.md, alignItems: 'center', gap: 3 },
   moodEmoji: { fontSize: Typography.xl },
   moodCount: { fontSize: Typography.base, fontWeight: Typography.bold },
   moodLabel: { fontSize: Typography.xs, color: Colors.textMuted, fontWeight: Typography.medium },
   moodPct: { fontSize: Typography.xs, color: Colors.textMuted },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.xxl,
-    gap: Spacing.base,
-  },
-  emptyIcon: {
-    width: 96,
-    height: 96,
-    borderRadius: Radius.xxl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
-    borderWidth: 1,
-  },
-  emptyTitle: {
-    fontSize: Typography.xl,
-    fontWeight: Typography.extraBold,
-    color: Colors.textPrimary,
-  },
-  emptyText: {
-    fontSize: Typography.base,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: Typography.base * 1.65,
-  },
+  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xxl, gap: Spacing.base },
+  emptyIconWrap: { width: 96, height: 96, borderRadius: Radius.xxl, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.md, borderWidth: 1 },
+  emptyTitle: { fontSize: Typography.xl, fontWeight: Typography.extraBold, color: Colors.textPrimary },
+  emptyText: { fontSize: Typography.base, color: Colors.textSecondary, textAlign: 'center', lineHeight: Typography.base * 1.65 },
 });
