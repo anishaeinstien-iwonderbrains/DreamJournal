@@ -1,5 +1,10 @@
+/**
+ * TagChip — liquid glass pill with vibrancy + specular highlights
+ */
 import React from 'react';
 import { Pressable, Text, StyleSheet, View } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, Radius } from '@/constants/theme';
 
 interface TagChipProps {
@@ -19,30 +24,64 @@ export function TagChip({ label, color, selected = false, onPress, size = 'md' }
         styles.chip,
         isSmall && styles.chipSm,
         {
-          backgroundColor: selected ? color + '20' : Colors.glass,
-          borderColor: selected ? color + 'BB' : Colors.glassBorder,
-          // Inner highlight
+          borderColor: selected ? color + 'C0' : 'rgba(255,255,255,0.14)',
           shadowColor: selected ? color : 'transparent',
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: selected ? 0.4 : 0,
-          shadowRadius: 6,
-          elevation: selected ? 3 : 0,
+          shadowOpacity: selected ? 0.55 : 0,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: selected ? 4 : 0,
         },
-        pressed && { opacity: 0.7, transform: [{ scale: 0.96 }] },
+        pressed && { opacity: 0.72, transform: [{ scale: 0.95 }] },
       ]}
     >
-      {/* Top shimmer highlight */}
-      {selected && (
-        <View style={[styles.shimmer, { backgroundColor: color + '30' }]} pointerEvents="none" />
-      )}
+      {/* Vibrancy blur */}
+      <BlurView
+        intensity={selected ? 80 : 55}
+        tint="dark"
+        style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]}
+      />
+
+      {/* Surface fill */}
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            borderRadius: Radius.full,
+            backgroundColor: selected ? color + '1E' : 'rgba(255,255,255,0.055)',
+          },
+        ]}
+      />
+
+      {/* Specular top shimmer */}
+      <LinearGradient
+        colors={[
+          selected ? color + '35' : 'rgba(255,255,255,0.22)',
+          'rgba(255,255,255,0.00)',
+        ]}
+        style={[styles.shimmer, { borderTopLeftRadius: Radius.full, borderTopRightRadius: Radius.full }]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        pointerEvents="none"
+      />
+
+      {/* 1px bright top edge */}
+      <View
+        style={[
+          styles.topLine,
+          { backgroundColor: selected ? color + '80' : 'rgba(255,255,255,0.50)' },
+        ]}
+        pointerEvents="none"
+      />
+
       {selected && !isSmall && (
-        <View style={[styles.dot, { backgroundColor: color }]} />
+        <View style={[styles.dot, { backgroundColor: color, shadowColor: color }]} />
       )}
+
       <Text
         style={[
           styles.label,
           isSmall && styles.labelSm,
-          { color: selected ? color : Colors.textMuted },
+          { color: selected ? color : Colors.textMuted, fontWeight: selected ? Typography.semiBold : Typography.medium },
         ]}
       >
         {label}
@@ -71,7 +110,14 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: '50%',
+    height: '55%',
+  },
+  topLine: {
+    position: 'absolute',
+    top: 0,
+    left: 8,
+    right: 8,
+    height: 1,
     borderTopLeftRadius: Radius.full,
     borderTopRightRadius: Radius.full,
   },
@@ -79,10 +125,13 @@ const styles = StyleSheet.create({
     width: 5,
     height: 5,
     borderRadius: 3,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 4,
+    elevation: 2,
   },
   label: {
     fontSize: Typography.sm,
-    fontWeight: Typography.medium,
   },
   labelSm: {
     fontSize: Typography.xs,

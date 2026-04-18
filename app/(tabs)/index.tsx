@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -16,6 +15,7 @@ import { Image } from 'expo-image';
 import { useSessions } from '@/hooks/useSessions';
 import { useTheme } from '@/hooks/useTheme';
 import { SessionCard } from '@/components/feature/SessionCard';
+import { LiquidGlass } from '@/components/ui/LiquidGlass';
 import { Colors, Typography, Spacing, Radius } from '@/constants/theme';
 
 const MOON_PHASES = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
@@ -30,9 +30,10 @@ export default function JournalHome() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {/* Deep radial glows */}
-      <View style={[styles.glow1, { backgroundColor: accent.primary + '22' }]} pointerEvents="none" />
-      <View style={[styles.glow2, { backgroundColor: accent.accent + '0E' }]} pointerEvents="none" />
+      {/* Ambient background blobs */}
+      <View style={[styles.blob1, { backgroundColor: accent.primary + '28' }]} pointerEvents="none" />
+      <View style={[styles.blob2, { backgroundColor: accent.accent + '12' }]} pointerEvents="none" />
+      <View style={[styles.blob3, { backgroundColor: '#40D8FF14' }]} pointerEvents="none" />
 
       {/* Header */}
       <View style={styles.header}>
@@ -49,23 +50,28 @@ export default function JournalHome() {
               : `${sessions.length} night${sessions.length !== 1 ? 's' : ''} · ${sessions.reduce((a, s) => a + s.dreams.length, 0)} dreams`}
           </Text>
         </View>
-        <Pressable
-          onPress={() => router.push('/session/new')}
-          style={({ pressed }) => [
-            styles.addBtn,
-            { backgroundColor: accent.primary, shadowColor: accent.primary },
-            pressed && { opacity: 0.82, transform: [{ scale: 0.90 }] },
-          ]}
-        >
-          {/* Glass reflection on button */}
-          <LinearGradient
-            colors={['rgba(255,255,255,0.30)', 'rgba(255,255,255,0.00)']}
-            style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 0.5 }}
-            pointerEvents="none"
-          />
-          <MaterialIcons name="add" size={28} color={Colors.textOnPrimary} />
+
+        {/* Add button — liquid glass pill */}
+        <Pressable onPress={() => router.push('/session/new')} style={styles.addBtnWrap}>
+          {({ pressed }) => (
+            <LiquidGlass
+              radius={Radius.full}
+              tint={accent.primary}
+              glowColor={accent.primary}
+              intensity={90}
+              pressed={pressed}
+              style={styles.addBtn}
+            >
+              <LinearGradient
+                colors={[accent.primary + 'CC', accent.primary + '99']}
+                style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                pointerEvents="none"
+              />
+              <MaterialIcons name="add" size={28} color="#fff" />
+            </LiquidGlass>
+          )}
         </Pressable>
       </View>
 
@@ -85,23 +91,27 @@ export default function JournalHome() {
           <Text style={styles.emptyText}>
             Tap the + button to log your first sleep session and start your dream journal.
           </Text>
-          <Pressable
-            onPress={() => router.push('/session/new')}
-            style={({ pressed }) => [
-              styles.emptyBtn,
-              { backgroundColor: accent.primary, shadowColor: accent.primary },
-              pressed && { opacity: 0.8 },
-            ]}
-          >
-            <LinearGradient
-              colors={['rgba(255,255,255,0.25)', 'rgba(255,255,255,0.00)']}
-              style={[StyleSheet.absoluteFill, { borderRadius: Radius.lg }]}
-              start={{ x: 0.5, y: 0 }}
-              end={{ x: 0.5, y: 0.55 }}
-              pointerEvents="none"
-            />
-            <MaterialIcons name="bedtime" size={20} color={Colors.textOnPrimary} />
-            <Text style={styles.emptyBtnText}>Log Sleep Session</Text>
+          <Pressable onPress={() => router.push('/session/new')} style={styles.emptyBtnWrap}>
+            {({ pressed }) => (
+              <LiquidGlass
+                radius={Radius.lg}
+                tint={accent.primary}
+                glowColor={accent.primary}
+                intensity={90}
+                pressed={pressed}
+                style={styles.emptyBtn}
+              >
+                <LinearGradient
+                  colors={[accent.primary + 'CC', accent.primaryDark + 'BB']}
+                  style={[StyleSheet.absoluteFill, { borderRadius: Radius.lg }]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  pointerEvents="none"
+                />
+                <MaterialIcons name="bedtime" size={20} color="#fff" />
+                <Text style={styles.emptyBtnText}>Log Sleep Session</Text>
+              </LiquidGlass>
+            )}
           </Pressable>
         </View>
       ) : (
@@ -117,31 +127,13 @@ export default function JournalHome() {
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
-            /* Stats bar — true glass */
-            <View
-              style={[
-                styles.statsOuter,
-                { borderColor: accent.primary + '28', shadowColor: accent.primary },
-              ]}
+            <LiquidGlass
+              radius={Radius.xl}
+              tint={accent.primary}
+              glowColor={accent.primary}
+              intensity={85}
+              style={styles.statsCard}
             >
-              <BlurView intensity={60} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: Radius.xl }]} />
-              <View style={[StyleSheet.absoluteFill, styles.statsFill]} />
-              <LinearGradient
-                colors={[accent.primary + '14', 'transparent']}
-                style={[StyleSheet.absoluteFill, { borderRadius: Radius.xl }]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                pointerEvents="none"
-              />
-              <LinearGradient
-                colors={['rgba(255,255,255,0.26)', 'rgba(255,255,255,0.00)']}
-                style={[styles.statsShimmer, { borderTopLeftRadius: Radius.xl, borderTopRightRadius: Radius.xl }]}
-                start={{ x: 0.5, y: 0 }}
-                end={{ x: 0.5, y: 1 }}
-                pointerEvents="none"
-              />
-              <View style={styles.statsTopLine} />
-
               <View style={styles.statsContent}>
                 <View style={styles.statItem}>
                   <Text style={[styles.statNum, { color: accent.light }]}>{sessions.length}</Text>
@@ -164,7 +156,7 @@ export default function JournalHome() {
                   <Text style={styles.statLabel}>avg quality</Text>
                 </View>
               </View>
-            </View>
+            </LiquidGlass>
           }
         />
       )}
@@ -174,131 +166,56 @@ export default function JournalHome() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.bg },
-  glow1: {
-    position: 'absolute',
-    width: 340,
-    height: 340,
-    borderRadius: 170,
-    top: -100,
-    right: -80,
+
+  blob1: {
+    position: 'absolute', width: 380, height: 380, borderRadius: 190, top: -130, right: -100,
   },
-  glow2: {
-    position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    bottom: 120,
-    left: -70,
+  blob2: {
+    position: 'absolute', width: 260, height: 260, borderRadius: 130, bottom: 160, left: -90,
   },
+  blob3: {
+    position: 'absolute', width: 200, height: 200, borderRadius: 100, bottom: 80, right: 20,
+  },
+
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.base,
-    paddingTop: Spacing.sm,
-    paddingBottom: Spacing.base,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: Spacing.base, paddingTop: Spacing.sm, paddingBottom: Spacing.base,
   },
   headerLeft: { flex: 1, marginRight: Spacing.base },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   moonEmoji: { fontSize: 22 },
   appTitle: {
-    fontSize: Typography.xl,
-    fontWeight: Typography.extraBold,
-    color: Colors.textPrimary,
-    letterSpacing: -0.3,
+    fontSize: Typography.xl, fontWeight: Typography.extraBold,
+    color: Colors.textPrimary, letterSpacing: -0.3,
   },
-  subtitle: {
-    fontSize: Typography.xs,
-    color: Colors.textMuted,
-    marginTop: 3,
-    fontWeight: Typography.medium,
-  },
-  addBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.55,
-    shadowRadius: 18,
-    elevation: 12,
-  },
-  list: {
-    paddingHorizontal: Spacing.base,
-    paddingBottom: Spacing.xxxl,
-    paddingTop: Spacing.sm,
-  },
-  // Stats bar
-  statsOuter: {
-    borderRadius: Radius.xl,
-    borderWidth: 1,
-    marginBottom: Spacing.base,
-    overflow: 'hidden',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.40,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  statsFill: {
-    backgroundColor: 'rgba(255,255,255,0.055)',
-    borderRadius: Radius.xl,
-  },
-  statsShimmer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 46,
-  },
-  statsTopLine: {
-    position: 'absolute',
-    top: 0,
-    left: Radius.xl * 0.5,
-    right: Radius.xl * 0.5,
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.50)',
-  },
+  subtitle: { fontSize: Typography.xs, color: Colors.textMuted, marginTop: 3, fontWeight: Typography.medium },
+
+  addBtnWrap: {},
+  addBtn: { width: 52, height: 52, alignItems: 'center', justifyContent: 'center' },
+
+  list: { paddingHorizontal: Spacing.base, paddingBottom: Spacing.xxxl, paddingTop: Spacing.sm },
+
+  statsCard: { marginBottom: Spacing.base },
   statsContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.base,
+    flexDirection: 'row', alignItems: 'center', paddingVertical: Spacing.md, paddingHorizontal: Spacing.base,
   },
   statItem: { flex: 1, alignItems: 'center' },
   statNum: { fontSize: Typography.xl, fontWeight: Typography.extraBold, letterSpacing: -0.5 },
   statLabel: { fontSize: Typography.xs, color: Colors.textMuted, fontWeight: Typography.medium, marginTop: 1 },
-  statDivider: { width: 1, height: 28, backgroundColor: Colors.glassBorder },
+  statDivider: { width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.12)' },
+
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: Spacing.xxl,
-    gap: Spacing.base,
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: Spacing.xxl, gap: Spacing.base,
   },
   emptyImage: { width: 200, height: 200, marginBottom: Spacing.md },
   emptyTitle: { fontSize: Typography.xl, fontWeight: Typography.extraBold, color: Colors.textPrimary },
   emptyText: {
-    fontSize: Typography.base,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: Typography.base * 1.65,
+    fontSize: Typography.base, color: Colors.textSecondary,
+    textAlign: 'center', lineHeight: Typography.base * 1.65,
   },
-  emptyBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    borderRadius: Radius.lg,
-    marginTop: Spacing.sm,
-    overflow: 'hidden',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.50,
-    shadowRadius: 16,
-    elevation: 10,
-  },
-  emptyBtnText: { color: Colors.textOnPrimary, fontSize: Typography.base, fontWeight: Typography.semiBold },
+  emptyBtnWrap: {},
+  emptyBtn: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md },
+  emptyBtnText: { color: '#fff', fontSize: Typography.base, fontWeight: Typography.semiBold },
 });
